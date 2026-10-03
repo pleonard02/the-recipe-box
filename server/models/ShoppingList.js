@@ -16,6 +16,8 @@ const shoppingListSchema = mongoose.Schema({
         ref: "ShoppingListItem",
         },
     ],
+}, {
+    timestamps: true,
 });
 
 const ShoppingList = mongoose.model("ShoppingList", shoppingListSchema);

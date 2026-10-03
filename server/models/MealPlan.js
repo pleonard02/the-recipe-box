@@ -26,6 +26,8 @@ const mealPlanSchema = mongoose.Schema({
             },
         },
     ],
+}, {
+    timestamps: true,
 });
 
 const MealPlan = mongoose.model("MealPlan", mealPlanSchema);

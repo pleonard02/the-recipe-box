@@ -27,7 +27,7 @@ const recipeSchema = mongoose.Schema({
         required: [true, "Please enter instructions for the recipe."],
     },
     prepTime: [Number],
-    CookTime: [Number],
+    cookTime: [Number],
     servings: [Number],
     isPublic: {
         type: Boolean,

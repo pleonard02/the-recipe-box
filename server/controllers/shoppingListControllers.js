@@ -72,11 +72,11 @@ async function updateShoppingList (req, res) {
 }
 
 async function deleteShoppingList (req, res) {
-    try {
+    try {0
         const shoppingList = await ShoppingList.findById(req.params.listId);
 
         if (!shoppingList) {
-            return res.status(404).json({ message: "Shopping list not found!"});
+        return res.status(404).json({ message: "Shopping list not found!"});
         }
 
         if (shoppingList.owner.toString() !== req.user._id.toString()) {
@@ -93,7 +93,7 @@ async function deleteShoppingList (req, res) {
     }
 }
 
-module.exports ={
+module.exports = {
     getAllShoppingLists,
     createShoppingList,
     getOneShoppingList,

@@ -11,9 +11,10 @@ const shoppingListItemSchema = mongoose.Schema({
         required: [true, "Please enter an amount."],
         trim: true,
     },
-    checked: {
-        type: Boolean,
-        default: false,
+    status: {
+        type: String, 
+        enum: ['planned', 'in-cart', 'purchased'],
+        default: 'planned',
     },
 }, {
     timestamps: true,

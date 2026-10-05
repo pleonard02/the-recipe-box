@@ -47,11 +47,13 @@ function Login() {
       }
 
       localStorage.setItem("token", data.token);
-      navigate("/home", { replace: true });
-
-      console.log("Login successful: ", data);
 
       setSuccessMessage("Login successful!");
+
+      setTimeout(() => {
+        navigate("/home", { replace: true });
+      }, 1000);
+
     } catch (error) {
       console.error("Login error:", error.message);
       setErrorMessage(error.message);

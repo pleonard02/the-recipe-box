@@ -6,7 +6,7 @@ async function getAllShoppingLists (req, res) {
         return res.status(200).json({shoppingLists});
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Could not receive shopping lists."});
+        return res.status(500).json({ message: "Could not receive shopping lists." });
     }
 }
 

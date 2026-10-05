@@ -5,10 +5,10 @@ const verifyAuthentication = require('../middleware/verifyAuthentication.js');
 
 router.use(verifyAuthentication);
 
-router.get("/meal-plans", mealPlanControllers.getAllMealPlans);
-router.post("/meal-plans", mealPlanControllers.createMealPlan);
-router.get("/meal-plans/:planId", mealPlanControllers.getOneMealPlan);
-router.patch("/meal-plans/:planId", mealPlanControllers.updateMealPlan);
-router.delete("/meal-plans/:planId", mealPlanControllers.deleteMealPlan);
+router.get("/", mealPlanControllers.getAllMealPlans);
+router.post("/", mealPlanControllers.createMealPlan);
+router.get("/:planId", mealPlanControllers.getOneMealPlan);
+router.patch("/:planId", mealPlanControllers.updateMealPlan);
+router.delete("/:planId", mealPlanControllers.deleteMealPlan);
 
 module.exports = router;

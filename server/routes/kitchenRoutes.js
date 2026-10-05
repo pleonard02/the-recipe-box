@@ -5,10 +5,10 @@ const verifyAuthentication = require("../middleware/verifyAuthentication.js");
 
 router.use(verifyAuthentication);
 
-router.get("/kitchen-items", kitchenControllers.getAllKitchenItems);
-router.post("/kitchen-items", kitchenControllers.createKitchenItem);
-router.get("/kitchen-items/:itemId", kitchenControllers.getOneKitchenItem);
-router.patch("/kitchen-items/:itemId", kitchenControllers.updateKitchenItem);
-router.delete("/kitchen-items/:itemId", kitchenControllers.deleteKitchenItem);
+router.get("/", kitchenControllers.getAllKitchenItems);
+router.post("/", kitchenControllers.createKitchenItem);
+router.get("/:itemId", kitchenControllers.getOneKitchenItem);
+router.patch("/:itemId", kitchenControllers.updateKitchenItem);
+router.delete("/:itemId", kitchenControllers.deleteKitchenItem);
 
 module.exports = router;

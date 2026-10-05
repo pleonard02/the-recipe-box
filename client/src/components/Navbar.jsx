@@ -5,46 +5,47 @@ import myKitchenIcon from '../assets/my-kitchen.png';
 import shoppingListIcon from '../assets/shopping-list.png'; 
 import recipeIcon from '../assets/recipe-icon.png';
 import lemonTreeNavbar from '../assets/lemon-tree-navbar.png';
+import { NavLink } from 'react-router-dom';
 
 function Sidebar() {
     return (
         <aside className="sidebar">
             <nav aria-label="Main navigation">
-                <a href="/home">
+                <NavLink to="/home">
                     <img 
                         src={homeIcon}
                         alt=""
-                    />Home</a>
+                    />Home</NavLink>
 
-                <a href="/recipes">
+                <NavLink to="/recipes">
                     <img 
                             src={recipeIcon}
                             alt=""
-                        />Recipes</a>
+                        />Recipes</NavLink>
                 
-                <a href="/favorite-recipes">
+                <NavLink to="/favorite-recipes">
                     <img 
                         src={favoriteRecipeIcon}
                         alt=""
-                    />Favorite Recipes</a>
+                    />Favorite Recipes</NavLink>
                 
-                <a href="/meal-plan">
+                <NavLink to="/meal-plan">
                     <img
                         src={mealPlan}
                         alt=""
-                    />Meal Plan</a>
+                    />Meal Plan</NavLink>
                 
-                <a href="/my-kitchen">
+                <NavLink to="/my-kitchen">
                     <img
                         src={myKitchenIcon}
                         alt=""
-                    />My Kitchen</a>
+                    />My Kitchen</NavLink>
     
-                <a href="/shopping-list">
+                <NavLink to="/shopping-list">
                     <img
                         src={shoppingListIcon}
                         alt=""
-                    />Shopping List</a>  
+                    />Shopping List</NavLink>  
             </nav>
             <img
                 src={lemonTreeNavbar}

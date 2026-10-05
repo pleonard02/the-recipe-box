@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Recipes from "./pages/Recipes";
@@ -11,10 +11,12 @@ import Register from "./pages/Register";
 import "./App.css";
 
 function App() {
+  const { pathname } = useLocation();
+  const isRegistrationPage = pathname.replace(/\/+$/, "") === "/register";
 
   return (
     <div className="app-layout">
-      <Navbar />
+      {!isRegistrationPage && <Navbar />}
 
       <Routes>
         <Route path="/" element={<Home />} />

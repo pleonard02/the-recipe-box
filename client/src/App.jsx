@@ -12,11 +12,13 @@ import "./App.css";
 
 function App() {
   const { pathname } = useLocation();
-  const isRegistrationPage = pathname.replace(/\/+$/, "") === "/register";
+  const isAuthPage = ["/register", "/login"].includes(
+    pathname.replace(/\/+$/, ""),
+  );
 
   return (
     <div className="app-layout">
-      {!isRegistrationPage && <Navbar />}
+      {!isAuthPage && <Navbar />}
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -30,6 +32,6 @@ function App() {
         <Route path="/register" element={<Register />} />
       </Routes>
     </div>
-  )
+  );
 }
 export default App;

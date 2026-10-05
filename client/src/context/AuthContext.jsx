@@ -1,51 +1,59 @@
-import { createContext, useContext, useEffect, useState } from "react";
-
-const AuthContext = createContext();
+import { useEffect, useState } from "react";
+import { AuthContext } from "./authContext";
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(() => ({
+    token: localStorage.getItem("token"),
+    user: null,
+  }));
+  const { token, user } = session;
 
-  const [token, setToken] = useState(() => {
-    return localStorage.getItem("token");
-  });
+  function login(newToken) {
+    localStorage.setItem("token", newToken);
+    setSession({ token: newToken, user: null });
+  }
+
+  function logout() {
+    localStorage.removeItem("token");
+    setSession({ token: null, user: null });
+  }
 
   useEffect(() => {
-    if (!token) {
-      setUser(null);
-      return;
-    }
+    if (!token) return;
+    const controller = new AbortController();
 
     async function getCurrentUser() {
       try {
         const response = await fetch("http://localhost:3000/api/users", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
         });
-
         const data = await response.json();
+        if (controller.signal.aborted) return;
 
+        if (response.status === 401 || response.status === 404) {
+          localStorage.removeItem("token");
+          setSession({ token: null, user: null });
+          return;
+        }
         if (!response.ok) {
           throw new Error(data.message || "Could not retrieve current user.");
         }
-
-        setUser(data.user);
+        setSession({ token, user: data.user });
       } catch (error) {
-        console.error("Current user error:", error.message);
-        setUser(null);
+        if (!controller.signal.aborted) {
+          console.error("Current user error:", error.message);
+        }
       }
     }
 
     getCurrentUser();
+    return () => controller.abort();
   }, [token]);
 
   return (
-    <AuthContext.Provider value={{ user, token }}>
+    <AuthContext.Provider value={{ user, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
 }

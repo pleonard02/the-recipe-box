@@ -8,6 +8,7 @@ import MyKitchen from "./pages/Kitchen";
 import ShoppingList from "./pages/ShoppingList";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import "./App.css";
 
 function App() {
@@ -21,13 +22,69 @@ function App() {
       {!isAuthPage && <Navbar />}
 
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/recipes" element={<Recipes />} />
-        <Route path="/favorite-recipes" element={<FavoriteRecipes />} />
-        <Route path="/meal-plan" element={<MealPlan />} />
-        <Route path="/my-kitchen" element={<MyKitchen />} />
-        <Route path="/shopping-list" element={<ShoppingList />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/recipes"
+          element={
+            <ProtectedRoute>
+              <Recipes />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/favorite-recipes"
+          element={
+            <ProtectedRoute>
+              <FavoriteRecipes />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/meal-plan"
+          element={
+            <ProtectedRoute>
+              <MealPlan />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/my-kitchen"
+          element={
+            <ProtectedRoute>
+              <MyKitchen />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/shopping-list"
+          element={
+            <ProtectedRoute>
+              <ShoppingList />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

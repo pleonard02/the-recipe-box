@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useAuth } from "../context/useAuth";
 import welcomeHome from "../assets/welcome-home.png";
 import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -46,7 +48,7 @@ function Login() {
         throw new Error(data.message || "Login failed.");
       }
 
-      localStorage.setItem("token", data.token);
+      login(data.token);
 
       setSuccessMessage("Login successful!");
 

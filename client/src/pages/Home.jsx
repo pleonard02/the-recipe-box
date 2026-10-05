@@ -1,5 +1,5 @@
 import recipeBoxLogo from "../assets/recipe-box-logo.png";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 function Home() {
   const { user } = useAuth();

@@ -15,8 +15,8 @@ const emptyRecipe = {
   isPublic: false,
 };
 
-function RecipeForm({ onClose, token }) {
-  const [recipe, setRecipe] = useState(emptyRecipe);
+function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
+  const [recipe, setRecipe] = useState(editingRecipe || emptyRecipe);
   const [formError, setFormError] = useState("");
 
   function handleChange(event) {
@@ -100,12 +100,18 @@ function RecipeForm({ onClose, token }) {
       })),
     };
 
+    const url = editingRecipe
+      ? `http://localhost:3000/api/recipe/${editingRecipe._id}`
+      : "http://localhost:3000/api/recipe";
+
+    const method = editingRecipe ? "PATCH" : "POST";
+
     try {
-      const response = await fetch("http://localhost:3000/api/recipe", {
-        method: "POST",
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(recipeData),
       });
@@ -118,6 +124,7 @@ function RecipeForm({ onClose, token }) {
 
       console.log("Recipe created:", data);
       setRecipe(emptyRecipe);
+      onRecipeCreated?.();
       onClose();
     } catch (error) {
       console.error("Create recipe error:", error);

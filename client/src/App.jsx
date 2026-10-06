@@ -9,6 +9,7 @@ import ShoppingList from "./pages/ShoppingList";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import RecipeDetails from "./pages/RecipeDetails.jsx";
 import "./App.css";
 
 function App() {
@@ -45,6 +46,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Recipes />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/recipes/:recipeId"
+          element={
+            <ProtectedRoute>
+              <RecipeDetails />
             </ProtectedRoute>
           }
         />

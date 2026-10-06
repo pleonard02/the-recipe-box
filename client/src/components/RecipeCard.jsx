@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
   console.log(recipe.name, recipe.isFavorite);
   return (
@@ -27,7 +29,12 @@ function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
       </div>
 
       <h3 className="mt-2 text-xl font-semibold text-[#0d5686]">
-        {recipe.name}
+        <Link
+          to={`/recipes/${recipe._id}`}
+          className="transition hover:text-[#1677b8] hover:underline"
+        >
+          {recipe.name}
+        </Link>
       </h3>
 
       <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#69767b]">

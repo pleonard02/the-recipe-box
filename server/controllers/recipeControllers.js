@@ -82,6 +82,7 @@ async function updateRecipe (req, res) {
         if (req.body.cookTime !== undefined) recipe.cookTime = req.body.cookTime;
         if (req.body.servings !== undefined) recipe.servings = req.body.servings;
         if (req.body.isPublic !== undefined) recipe.isPublic = req.body.isPublic;
+        if (req.body.isFavorite !== undefined) recipe.isFavorite = req.body.isFavorite;
     
         await recipe.save();
         

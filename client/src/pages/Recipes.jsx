@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../context/useAuth";
 import RecipeForm from "../components/RecipeForm";
 import useFetch from "../hooks/useFetch";
+import RecipeCard from "../components/RecipeCard";
 
 function Recipes() {
   const { token } = useAuth();
@@ -38,12 +39,45 @@ function Recipes() {
     }
   }
 
+  function handleEdit(recipe) {
+    setEditingRecipe(recipe);
+    setShowAddForm(true);
+  }
+
   if (isLoading) {
     return <p>Loading recipes...</p>;
   }
 
   if (error) {
     return <p>{error.message}</p>;
+  }
+
+  async function handleFavorite(recipe) {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/recipe/${recipe._id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            isFavorite: !recipe.isFavorite,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not update favorite.");
+      }
+
+      refetch();
+    } catch (error) {
+      console.error("Favorite recipe error:", error);
+    }
   }
 
   return (
@@ -121,63 +155,13 @@ function Recipes() {
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {recipes.map((recipe) => (
-              <article
+              <RecipeCard
                 key={recipe._id}
-                className="flex min-h-[250px] flex-col rounded-2xl border border-[#dbe3e6] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-              >
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#1677b8]">
-                  {recipe.isPublic ? "Public Recipe" : "My Recipe"}
-                </p>
-
-                <h3 className="mt-2 text-xl font-semibold text-[#0d5686]">
-                  {recipe.name}
-                </h3>
-
-                <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#69767b]">
-                  {recipe.description || "No description added yet."}
-                </p>
-
-                <div className="mt-5 flex flex-wrap gap-2 text-xs font-medium text-[#536168]">
-                  {recipe.prepTime > 0 && (
-                    <span className="rounded-full bg-[#f5f7f7] px-3 py-1">
-                      Prep {recipe.prepTime} min
-                    </span>
-                  )}
-
-                  {recipe.cookTime > 0 && (
-                    <span className="rounded-full bg-[#f5f7f7] px-3 py-1">
-                      Cook {recipe.cookTime} min
-                    </span>
-                  )}
-
-                  {recipe.servings > 0 && (
-                    <span className="rounded-full bg-[#fff8cf] px-3 py-1">
-                      Serves {recipe.servings}
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-auto flex items-center gap-4 border-t border-[#edf2f4] pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingRecipe(recipe);
-                      setShowAddForm(true);
-                    }}
-                    className="text-sm font-semibold text-[#1677b8] hover:underline"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(recipe._id)}
-                    className="text-sm font-semibold text-[#9b3b32] hover:underline"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </article>
+                recipe={recipe}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onFavorite={handleFavorite}
+              />
             ))}
           </div>
         )}

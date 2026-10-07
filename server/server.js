@@ -21,11 +21,11 @@ app.use("/api/users", userRouter);
 const shoppingListRouter = require("./routes/shoppingListRoutes.js");
 app.use("/api/shopping-list", shoppingListRouter);
 
+const recipeShareRouter = require("./routes/recipeShareRoutes.js");
+app.use("/api/recipe", recipeShareRouter);
+
 const recipeRouter = require("./routes/recipeRoutes.js");
 app.use("/api/recipe", recipeRouter);
-
-const recipeShareRouter = require("./routes/recipeShareRoutes");
-app.use("/api/recipe", recipeShareRouter);
 
 const mealPlanRouter = require("./routes/mealPlanRoutes.js");
 app.use("/api/meal-plan", mealPlanRouter);

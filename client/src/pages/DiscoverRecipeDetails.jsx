@@ -3,6 +3,7 @@ import useFetch from "../hooks/useFetch";
 import { mealDbApi } from "../services/mealDbApi";
 import { useAuth } from "../context/useAuth";
 import { useState } from "react";
+import { API_URL } from "../config/api";
 
 function DiscoverRecipeDetails() {
   const { mealId } = useParams();
@@ -13,6 +14,17 @@ function DiscoverRecipeDetails() {
   const [isFavoriteUpdating, setIsFavoriteUpdating] = useState(false);
 
   const { data, isLoading, error } = useFetch(mealDbApi.getById(mealId));
+
+  const { data: savedRecipeData, refetch: refetchSavedRecipes } = useFetch(
+    `${API_URL}/api/recipe`,
+    token,
+  );
+
+  const savedRecipes = savedRecipeData?.recipes || [];
+
+  const existingSavedRecipe = savedRecipes.find(
+    (recipe) => recipe.source === "mealdb" && recipe.externalId === mealId,
+  );
 
   if (isLoading) {
     return (
@@ -64,19 +76,16 @@ function DiscoverRecipeDetails() {
     try {
       setFavoriteError("");
 
-      if (savedFavorite) {
-        const nextIsFavorite = !savedFavorite.isFavorite;
+      if (existingSavedRecipe || savedFavorite) {
+        const recipeToDelete = existingSavedRecipe || savedFavorite;
+
         const response = await fetch(
-          `http://localhost:3000/api/recipe/${savedFavorite._id}`,
+          `${API_URL}/api/recipe/${recipeToDelete._id}`,
           {
-            method: "PATCH",
+            method: "DELETE",
             headers: {
-              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({
-              isFavorite: nextIsFavorite,
-            }),
           },
         );
 
@@ -84,15 +93,12 @@ function DiscoverRecipeDetails() {
 
         if (!response.ok) {
           throw new Error(
-            result.message || "Could not update favorite.",
+            result.message || "Could not remove recipe from your Recipe Box.",
           );
         }
 
-        setSavedFavorite((currentFavorite) =>
-          currentFavorite
-            ? { ...currentFavorite, isFavorite: nextIsFavorite }
-            : currentFavorite,
-        );
+        setSavedFavorite(null);
+        refetchSavedRecipes();
 
         return;
       }
@@ -103,7 +109,7 @@ function DiscoverRecipeDetails() {
         unit: item.measurement,
       }));
 
-      const response = await fetch("http://localhost:3000/api/recipe", {
+      const response = await fetch(`${API_URL}/api/recipe`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -112,6 +118,11 @@ function DiscoverRecipeDetails() {
         body: JSON.stringify({
           name: meal.strMeal,
           description: `${meal.strArea || ""} ${meal.strCategory || ""}`.trim(),
+          image: meal.strMealThumb || "",
+          category: meal.strCategory || "",
+          cuisine: meal.strArea || "",
+          source: "mealdb",
+          externalId: meal.idMeal,
           ingredients: recipeIngredients,
           instructions: meal.strInstructions,
           isFavorite: true,
@@ -133,6 +144,7 @@ function DiscoverRecipeDetails() {
       }
 
       setSavedFavorite({ ...createdRecipe, isFavorite: true });
+      refetchSavedRecipes();
     } catch (error) {
       console.error("Favorite recipe error:", error);
       setFavoriteError(error.message);

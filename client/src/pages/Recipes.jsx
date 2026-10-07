@@ -3,30 +3,57 @@ import { useAuth } from "../context/useAuth";
 import RecipeForm from "../components/RecipeForm";
 import useFetch from "../hooks/useFetch";
 import RecipeCard from "../components/RecipeCard";
+import { API_URL } from "../config/api";
+import { Link } from "react-router-dom";
+import { mealDbApi } from "../services/mealDbApi";
 
 function Recipes() {
   const { token } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [mealDbSearch, setMealDbSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCuisine, setSelectedCuisine] = useState("");
 
   const { data, isLoading, error, refetch } = useFetch(
-    "http://localhost:3000/api/recipe",
+    `${API_URL}/api/recipe`,
     token,
   );
 
   const recipes = data?.recipes || [];
+  const activeMealDbSearch = mealDbSearch || searchTerm.trim();
+
+  let mealDbUrl = mealDbApi.searchByName(activeMealDbSearch);
+
+  if (selectedCategory) {
+    mealDbUrl = mealDbApi.filterByCategory(selectedCategory);
+  } else if (selectedCuisine) {
+    mealDbUrl = mealDbApi.filterByCuisine(selectedCuisine);
+  }
+
+  const {
+    data: mealDbData,
+    isLoading: mealDbLoading,
+    error: mealDbError,
+  } = useFetch(mealDbUrl);
+
+  const { data: categoryData } = useFetch(mealDbApi.getCategories());
+  const { data: cuisineData } = useFetch(mealDbApi.getCuisines());
+
+  const categories = categoryData?.categories || [];
+  const cuisines = cuisineData?.meals || [];
+
+  const discoverRecipes = mealDbData?.meals || [];
 
   async function handleDelete(recipeId) {
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/recipe/${recipeId}`,
-        {
-          method: "DELETE",
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+      const response = await fetch(`${API_URL}/api/recipe/${recipeId}`, {
+        method: "DELETE",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-      );
+      });
 
       if (!response.ok) {
         const payload = await response.json();
@@ -54,19 +81,34 @@ function Recipes() {
 
   async function handleFavorite(recipe) {
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/recipe/${recipe._id}`,
-        {
-          method: "PATCH",
+      if (recipe.source === "mealdb" && recipe.isFavorite) {
+        const response = await fetch(`${API_URL}/api/recipe/${recipe._id}`, {
+          method: "DELETE",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            isFavorite: !recipe.isFavorite,
-          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Could not update favorite.");
+        }
+
+        refetch();
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/recipe/${recipe._id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          isFavorite: !recipe.isFavorite,
+        }),
+      });
 
       const data = await response.json();
 
@@ -80,9 +122,17 @@ function Recipes() {
     }
   }
 
+  function handleMealDbSearch(event) {
+    event.preventDefault();
+
+    setSelectedCategory("");
+    setSelectedCuisine("");
+    setMealDbSearch(searchTerm.trim());
+  }
+
   return (
     <main className="main min-h-screen bg-[#fffefa] px-8 py-10">
-      <section className="mb-10">
+      <section className="mx-auto max-w-7xl">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#1677b8]">
@@ -162,6 +212,125 @@ function Recipes() {
                 onDelete={handleDelete}
                 onFavorite={handleFavorite}
               />
+            ))}
+          </div>
+        )}
+      </section>
+      <section className="mt-14">
+        <div className="mb-6">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#1677b8]">
+            DISCOVER
+          </p>
+
+          <h2 className="mt-1 text-2xl font-semibold text-[#0d5686]">
+            Discover Recipes
+          </h2>
+
+          <p className="mt-2 text-[#69767b]">
+            Browse recipes and save your favorites to your Recipe Box.
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleMealDbSearch}
+          className="mb-8 flex max-w-xl gap-3"
+        >
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Search chicken, pasta, curry..."
+            className="min-w-0 flex-1 rounded-xl border border-[#b9ccd5] bg-white px-4 py-3 text-[#33454d] outline-none focus:border-[#1677b8]"
+          />
+
+          <button
+            type="submit"
+            className="rounded-xl bg-[#0d5686] px-6 py-3 font-semibold text-[#fff3a6] transition hover:bg-[#1677b8]"
+          >
+            Search
+          </button>
+        </form>
+
+        <div className="mb-8 flex flex-wrap gap-4">
+          <select
+            value={selectedCategory}
+            onChange={(event) => {
+              setSelectedCategory(event.target.value);
+              setSelectedCuisine("");
+              setMealDbSearch("");
+              setSearchTerm("");
+            }}
+            className="rounded-xl border border-[#b9ccd5] bg-white px-4 py-3 text-[#0d5686] outline-none focus:border-[#1677b8]"
+          >
+            <option value="">All Categories</option>
+
+            {categories.map((category) => (
+              <option key={category.idCategory} value={category.strCategory}>
+                {category.strCategory}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={selectedCuisine}
+            onChange={(event) => {
+              setSelectedCuisine(event.target.value);
+              setSelectedCategory("");
+              setMealDbSearch("");
+              setSearchTerm("");
+            }}
+            className="rounded-xl border border-[#b9ccd5] bg-white px-4 py-3 text-[#0d5686] outline-none focus:border-[#1677b8]"
+          >
+            <option value="">All Cuisines</option>
+
+            {cuisines.map((cuisine) => (
+              <option key={cuisine.strArea} value={cuisine.strArea}>
+                {cuisine.strArea}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {mealDbLoading ? (
+          <p className="text-[#69767b]">Loading recipes...</p>
+        ) : mealDbError ? (
+          <p className="text-red-500">Could not load recipes.</p>
+        ) : discoverRecipes.length === 0 ? (
+          <p className="text-[#68767b]">No recipes found.</p>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {discoverRecipes.map((meal) => (
+              <Link
+                key={meal.idMeal}
+                to={`/discover/${meal.idMeal}`}
+                className="group overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              >
+                <img
+                  src={meal.strMealThumb}
+                  alt={meal.strMeal}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-[#0d5686] group-hover:text-[#1677b8]">
+                    {meal.strMeal}
+                  </h3>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {meal.strCategory && (
+                      <span className="rounded-full bg-[#fff3a6] px-3 py-1 text-xs font-semibold text-[#0d5686]">
+                        {meal.strCategory}
+                      </span>
+                    )}
+
+                    {meal.strArea && (
+                      <span className="rounded-full bg-[#edf6fa] px-3 py-1 text-xs font-semibold text-[#1677b8]">
+                        {meal.strArea}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
         )}

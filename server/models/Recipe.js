@@ -16,6 +16,33 @@ const recipeSchema = mongoose.Schema(
       type: String,
       default: "",
     },
+    image: {
+      type: String,
+      default: "",
+    },
+
+    category: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    cuisine: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    source: {
+      type: String,
+      enum: ["user", "mealdb"],
+      default: "user",
+    },
+
+    externalId: {
+      type: String,
+      default: null,
+    },
     ingredients: [
       {
         name: String,

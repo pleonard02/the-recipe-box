@@ -1,26 +1,31 @@
 const mongoose = require("mongoose");
 
-const shoppingListItemSchema = mongoose.Schema({
+const shoppingListItemSchema = mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: [true, "Please enter a name for the item."],
-        trim: true,
+      type: String,
+      required: [true, "Please enter a name for the item."],
+      trim: true,
     },
     quantity: {
-        type: Number,
-        required: [true, "Please enter an amount."],
-        trim: true,
+      type: String,
+      required: [true, "Please enter an amount."],
+      trim: true,
     },
     status: {
-        type: String, 
-        enum: ['planned', 'in-cart', 'purchased'],
-        default: 'planned',
+      type: String,
+      enum: ["planned", "in-cart", "purchased"],
+      default: "planned",
     },
-}, {
+  },
+  {
     timestamps: true,
-});
+  },
+);
 
-const ShoppingListItem = mongoose.model("ShoppingListItem", shoppingListItemSchema);
+const ShoppingListItem = mongoose.model(
+  "ShoppingListItem",
+  shoppingListItemSchema,
+);
 
 module.exports = ShoppingListItem;
-

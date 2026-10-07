@@ -15,7 +15,7 @@ const recipeShareSchema = mongoose.Schema(
     role: {
       type: String,
       enum: ["chef", "sous-chef", "co-executive-chef"],
-      default: chef,
+      default: "chef",
     },
     invitedBy: {
       type: mongoose.Schema.Types.ObjectId,

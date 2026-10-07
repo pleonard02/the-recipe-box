@@ -15,21 +15,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(cors());
 
-const userRouter = require('./routes/userRoutes.js');
+const userRouter = require("./routes/userRoutes.js");
 app.use("/api/users", userRouter);
 
-const shoppingListRouter = require('./routes/shoppingListRoutes.js');
+const shoppingListRouter = require("./routes/shoppingListRoutes.js");
 app.use("/api/shopping-list", shoppingListRouter);
 
-const recipeRouter = require('./routes/recipeRoutes.js');
+const recipeRouter = require("./routes/recipeRoutes.js");
 app.use("/api/recipe", recipeRouter);
 
-const mealPlanRouter = require('./routes/mealPlanRoutes.js');
-app.use('/api/meal-plan', mealPlanRouter);
+const recipeShareRouter = require("./routes/recipeShareRoutes");
+app.use("/api/recipe", recipeShareRouter);
 
-const kitchenItemRouter = require('./routes/kitchenRoutes.js');
-app.use('/api/kitchen-item', kitchenItemRouter);
+const mealPlanRouter = require("./routes/mealPlanRoutes.js");
+app.use("/api/meal-plan", mealPlanRouter);
+
+const kitchenItemRouter = require("./routes/kitchenRoutes.js");
+app.use("/api/kitchen-item", kitchenItemRouter);
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

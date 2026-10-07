@@ -103,7 +103,11 @@ async function updateRecipeShare(req, res) {
     const { recipeId, shareId } = req.params;
     const { role } = req.body;
 
-    const allowedRoles = ["chef", "sous-chef", "co-executive-chef"];
+    const allowedRoles = [
+      "chef",
+      "sous-chef",
+      "co-executive-chef",
+    ];
 
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({
@@ -199,21 +203,19 @@ async function deleteRecipeShare(req, res) {
 }
 
 async function getRecipesSharedWithMe(req, res) {
-  try {
-    const recipeShares = await RecipeShare.find({
-      user: req.user._id,
-    })
-      .populate("recipe")
-      .populate("invitedBy", "username email");
+    try {
+        const recipeShares = await RecipeShare.find({
+            user: req.user._id,
+        })
+            .populate("recipe")
+            .populate("invitedBy", "username email");
 
-    return res.status(200).json({ sharedRecipes: recipeShares });
-  } catch (error) {
-    console.error("Get shared recipes error:", error);
+            return res.status(200).json({ sharedRecipes: recipeShares });
+    } catch (error) {
+        console.error("Get shared recipes error:", error);
 
-    return res
-      .status(500)
-      .json({ message: "Something went wrong while getting shared recipes." });
-  }
+        return res.status(500).json({ message: "Something went wrong while getting shared recipes."});
+    }
 }
 
 module.exports = {
@@ -223,3 +225,4 @@ module.exports = {
   deleteRecipeShare,
   getRecipesSharedWithMe,
 };
+

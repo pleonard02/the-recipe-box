@@ -56,17 +56,7 @@ async function createRecipe(req, res) {
 
 async function getOneRecipe(req, res) {
   try {
-    const recipe = await Recipe.findById(req.params.recipeId);
-
-    if (!recipe) {
-      return res.status(404).json({ message: "We could not " });
-    }
-
-    if (recipe.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "You cannot view this recipe." });
-    }
-
-    return res.status(200).json(recipe);
+    return res.status(200).json(req.recipe);
   } catch (error) {
     console.error(error);
     return res.status(400).json({ message: error.message });
@@ -75,17 +65,7 @@ async function getOneRecipe(req, res) {
 
 async function updateRecipe(req, res) {
   try {
-    const recipe = await Recipe.findById(req.params.recipeId);
-
-    if (!recipe) {
-      return res.status(404).json({ message: "Recipe not found." });
-    }
-
-    if (recipe.owner.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: "You cannot update this recipe." });
-    }
+    const recipe = req.recipe;
 
     if (req.body.name !== undefined) recipe.name = req.body.name;
     if (req.body.description !== undefined) recipe.description = req.body.description;

@@ -27,6 +27,9 @@ app.use("/api/recipe", recipeShareRouter);
 const recipeNoteRouter = require('./routes/recipeNoteRoutes');
 app.use('/api/recipe', recipeNoteRouter);
 
+const recipeSuggestionRouter = require('./routes/recipeSuggestionRouter');
+app.use('/api/recipe', recipeSuggestionRouter);
+
 const recipeRouter = require("./routes/recipeRoutes.js");
 app.use("/api/recipe", recipeRouter);
 

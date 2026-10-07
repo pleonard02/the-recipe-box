@@ -2,15 +2,65 @@ import recipeBoxLogo from "../assets/recipe-box-logo.png";
 import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
 import { mealDbApi } from "../services/mealDbApi";
+import { Link } from "react-router-dom";
 
 function Home() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+
+  const { data: kitchenData, isLoading: kitchenLoading } = useFetch(
+    "http://localhost:3000/api/kitchen-item",
+    token,
+  );
+
+  const {
+    data: recipeData,
+    isLoading: recipesLoading,
+    error: recipesError,
+  } = useFetch("http://localhost:3000/api/recipe", token);
+
+  const recipeList = recipeData?.recipes || recipeData || [];
+
+  const favoriteRecipes = Array.isArray(recipeList)
+    ? recipeList.filter((recipe) => recipe.isFavorite)
+    : [];
+
+  const kitchenItems = kitchenData?.kitchenItems || kitchenData || [];
+
+  const proteinKeywords = [
+    "chicken",
+    "beef",
+    "steak",
+    "ground beef",
+    "turkey",
+    "pork",
+    "ham",
+    "lamb",
+    "salmon",
+    "tuna",
+    "shrimp",
+    "fish",
+    "tofu",
+  ];
+
+  const proteinItem = Array.isArray(kitchenItems)
+    ? kitchenItems.find((item) =>
+        proteinKeywords.some((protein) =>
+          item.name?.toLowerCase().includes(protein),
+        ),
+      )
+    : null;
+
+  const protein = proteinItem
+    ? proteinKeywords.find((protein) =>
+        proteinItem.name.toLowerCase().includes(protein),
+      )
+    : "";
 
   const {
     data: mealData,
     isLoading: mealsLoading,
     error: mealsError,
-  } = useFetch(mealDbApi.searchByName("chicken"));
+  } = useFetch(protein ? mealDbApi.searchByIngredient(protein) : null);
 
   return (
     <main className="main">
@@ -23,21 +73,38 @@ function Home() {
 
         {user && <h1>Welcome back, {user.username}!</h1>}
 
-        {mealsLoading && <p>Loading meals...</p>}
+        {mealsLoading && protein && (
+          <p className="mt-8 text-[#7c858b]">
+            Finding recipes you can make with {protein}...
+          </p>
+        )}
 
-        {mealsError && <p>{mealsError.message}</p>}
+        {mealsError && (
+          <p className="mt-8 text-red-500">
+            Could not load recipe recommendations.
+          </p>
+        )}
 
-        {mealData?.meals && (
+        {protein && mealData?.meals && (
           <section className="mt-10">
-            <h2 className="mb-5 text-2xl font-semibold text-[#0d5686]">
-              Recipe Inspiration
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#1677b8]">
+              COOK WHAT YOU HAVE
+            </p>
+
+            <h2 className="mb-2 mt-1 text-2xl font-semibold text-[#0d5686]">
+              Recipes to Try with {protein}
             </h2>
+
+            <p className="mb-5 text-sm text-[#7c858b]">
+              Based on what you already have in My Kitchen.
+            </p>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {mealData.meals.slice(0, 3).map((meal) => (
-                <div
+                <Link
                   key={meal.idMeal}
-                  className="overflow-hidden rounded-2xl bg-white shadow-sm"
+                  to={`/discover/${meal.idMeal}`}
+                  className="block overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
                 >
                   <img
                     src={meal.strMealThumb}
@@ -51,14 +118,91 @@ function Home() {
                     </h3>
 
                     <p className="mt-1 text-sm text-[#7c858b]">
-                      {meal.strArea} • {meal.strCategory}
+                      Recipe inspiration from TheMealDB
                     </p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </section>
         )}
+
+        {!kitchenLoading && !protein && (
+          <section className="mt-10 rounded-2xl bg-white p-6 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#1677b8]">
+              COOK WHAT YOU HAVE
+            </p>
+
+            <h2 className="mt-1 text-2xl font-semibold text-[#0d5686]">
+              Add a protein to My Kitchen
+            </h2>
+
+            <p className="mt-2 text-sm text-[#7c858b]">
+              Add an item in the Protein category to get recipe recommendations.
+            </p>
+          </section>
+        )}
+
+        <section className="mt-12">
+          <div className="mb-5">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#1677b8]">
+              SAVED FOR LATER
+            </p>
+
+            <h2 className="mt-1 text-2xl font-semibold text-[#0d5686]">
+              Favorite Recipes
+            </h2>
+          </div>
+
+          {recipesLoading && (
+            <p className="text-[#7c858b]">Loading favorites...</p>
+          )}
+
+          {recipesError && (
+            <p className="text-red-500">
+              Could not load your favorite recipes.
+            </p>
+          )}
+
+          {!recipesLoading && !recipesError && favoriteRecipes.length === 0 && (
+            <div className="rounded-2xl bg-white p-8 shadow-sm">
+              <p className="font-semibold text-[#0d5686]">
+                No favorite recipes yet.
+              </p>
+
+              <p className="mt-2 text-sm text-[#7c858b]">
+                Favorite a recipe and it will show up here.
+              </p>
+            </div>
+          )}
+
+          {favoriteRecipes.length > 0 && (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {favoriteRecipes.slice(0, 3).map((recipe) => (
+                <div
+                  key={recipe._id}
+                  className="rounded-2xl bg-white p-5 shadow-sm"
+                >
+                  <h3 className="text-lg font-semibold text-[#0d5686]">
+                    {recipe.title}
+                  </h3>
+
+                  {recipe.category && (
+                    <p className="mt-1 text-sm text-[#7c858b]">
+                      {recipe.category}
+                    </p>
+                  )}
+
+                  <div className="mt-4">
+                    <span className="rounded-full bg-[#fff7c7] px-3 py-1 text-xs font-semibold text-[#0d5686]">
+                      ♥ Favorite
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </main>
   );

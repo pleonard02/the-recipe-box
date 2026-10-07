@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import RecipeDetails from "./pages/RecipeDetails.jsx";
+import DiscoverRecipeDetails from "./pages/DiscoverRecipeDetails";
 import "./App.css";
 
 function App() {
@@ -37,6 +38,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Home />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/discover/:mealId"
+          element={
+            <ProtectedRoute>
+              <DiscoverRecipeDetails />
             </ProtectedRoute>
           }
         />

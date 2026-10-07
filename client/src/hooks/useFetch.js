@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 function useFetch(url, token) {
   const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => Boolean(url));
   const [error, setError] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -11,6 +11,9 @@ function useFetch(url, token) {
   }
 
   useEffect(() => {
+    if (!url) {
+      return;
+    }
     const controller = new AbortController();
     const fetchData = async () => {
       setIsLoading(true);

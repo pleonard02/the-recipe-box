@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const recipeSuggestionSchema = ({
+const recipeSuggestionSchema = mongoose.Schema({
     recipe: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Recipe',
@@ -45,7 +45,7 @@ const recipeSuggestionSchema = ({
         default: "pending",
     },
 }, {
-    timestamps: true
+    timestamps: true,
 });
 
 const RecipeSuggestion = mongoose.model(

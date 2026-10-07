@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const recipeSuggestionControllers = require("../controllers/recipeSuggestionControllers");
+const recipeSuggestionControllers = require("../controllers/recipeSuggestionController");
 const verifyAuthentication = require("../middleware/verifyAuthentication");
 const verifyRecipeAccess = require("../middleware/verifyRecipeAccess");
 

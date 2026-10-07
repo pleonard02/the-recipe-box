@@ -21,6 +21,14 @@ function Recipes() {
     token,
   );
 
+  const {
+    data: sharedData,
+    isLoading: sharedLoading,
+    error: sharedError,
+  } = useFetch(`${API_URL}/api/recipe/shared-with-me`, token);
+
+  const sharedRecipes = sharedData?.sharedRecipes || [];
+
   const recipes = data?.recipes || [];
   const activeMealDbSearch = mealDbSearch || searchTerm.trim();
 
@@ -216,6 +224,95 @@ function Recipes() {
           </div>
         )}
       </section>
+
+      <section className="mt-14">
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#1677b8]">
+              COLLABORATIVE KITCHEN
+            </p>
+
+            <h2 className="mt-1 text-2xl font-semibold text-[#0d5686]">
+              Shared With Me
+            </h2>
+
+            <p className="mt-2 text-[#69767b]">
+              Recipes other chefs have invited you to collaborate on.
+            </p>
+          </div>
+
+          <p className="text-sm text-[#7c858b]">
+            {sharedRecipes.length}{" "}
+            {sharedRecipes.length === 1 ? "recipe" : "recipes"}
+          </p>
+        </div>
+
+        {sharedLoading ? (
+          <p className="text-[#69767b]">Loading shared recipes...</p>
+        ) : sharedError ? (
+          <p className="text-red-500">Could not load shared recipes.</p>
+        ) : sharedRecipes.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[#b9ccd5] bg-white px-6 py-10 text-center">
+            <h3 className="text-lg font-semibold text-[#0d5686]">
+              No recipes have been shared with you yet
+            </h3>
+
+            <p className="mt-2 text-[#69767b]">
+              When another cook invites you into their kitchen, their recipe
+              will appear here.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {sharedRecipes.map((share) => (
+              <Link
+                key={share._id}
+                to={`/recipes/${share.recipe._id}`}
+                className="group overflow-hidden rounded-2xl border border-[#dbe3e6] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              >
+                {share.recipe.image && (
+                  <img
+                    src={share.recipe.image}
+                    alt={share.recipe.name}
+                    className="aspect-[4/3] w-full object-cover"
+                  />
+                )}
+
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#1677b8]">
+                      {share.role === "co-executive-chef"
+                        ? "Co-Executive Chef"
+                        : share.role === "sous-chef"
+                          ? "Sous Chef"
+                          : "Chef"}
+                    </p>
+
+                    <span className="rounded-full bg-[#fff3a6] px-3 py-1 text-xs font-semibold text-[#0d5686]">
+                      Shared
+                    </span>
+                  </div>
+
+                  <h3 className="mt-3 text-lg font-semibold text-[#0d5686] group-hover:text-[#1677b8]">
+                    {share.recipe.name}
+                  </h3>
+
+                  <p className="mt-2 line-clamp-2 text-sm text-[#69767b]">
+                    {share.recipe.description || "No description added yet."}
+                  </p>
+
+                  {share.invitedBy?.username && (
+                    <p className="mt-4 text-xs text-[#7c858b]">
+                      Shared by {share.invitedBy.username}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
       <section className="mt-14">
         <div className="mb-6">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#1677b8]">

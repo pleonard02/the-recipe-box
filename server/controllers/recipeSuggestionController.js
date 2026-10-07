@@ -83,11 +83,15 @@ async function reviewRecipeSuggestion(req, res) {
     const { status } = req.body;
 
     if (!["approved", "rejected"].includes(status)) {
-      return res
-        .status(403)
-        .json({
-          message: "Only the Executive Chef can approve or reject suggestions.",
-        });
+      return res.status(400).json({
+        message: "Status must be approved or rejected.",
+      });
+    }
+
+    if (req.recipeRole !== "executive-chef") {
+      return res.status(403).json({
+        message: "Only the Executive Chef can approve or reject suggestions.",
+      });
     }
 
     const suggestion = await RecipeSuggestion.findOne({

@@ -5,11 +5,15 @@ const verifyAuthentication = require("../middleware/verifyAuthentication.js");
 
 router.use(verifyAuthentication);
 
+router.get("/weekly-buys", shoppingListControllers.getWeeklyBuys);
+router.delete("/weekly-buys/:buyId", shoppingListControllers.deleteWeeklyBuy);
+router.post("/:listId/items/:itemId/put-away", shoppingListControllers.putAwayShoppingItem);
+
 router.get("/", shoppingListControllers.getAllShoppingLists);
 router.post("/", shoppingListControllers.createShoppingList);
 router.post("/:listId/items", shoppingListControllers.addShoppingListItem);
-router.patch("/:listId/items/:itemId", shoppingListControllers.updateShoppingListItem,);
-router.delete("/:listId/items/:itemId", shoppingListControllers.deleteShoppingListItem,);
+router.patch("/:listId/items/:itemId", shoppingListControllers.updateShoppingListItem);
+router.delete("/:listId/items/:itemId", shoppingListControllers.deleteShoppingListItem);
 router.get("/:listId", shoppingListControllers.getOneShoppingList);
 router.patch("/:listId", shoppingListControllers.updateShoppingList);
 router.delete("/:listId", shoppingListControllers.deleteShoppingList);

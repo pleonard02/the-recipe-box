@@ -8,9 +8,24 @@ const shoppingListItemSchema = mongoose.Schema(
       trim: true,
     },
     quantity: {
+      type: Number,
+      required: [true, "Please enter a quantity."],
+      min: [0.01, "Quantity must be greater than zero."],
+    },
+    unit: {
       type: String,
-      required: [true, "Please enter an amount."],
       trim: true,
+      default: "",
+    },
+    weeklyBuy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "WeeklyBuy",
+      default: null,
+    },
+    kitchenItem: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "KitchenItem",
+      default: null,
     },
     status: {
       type: String,

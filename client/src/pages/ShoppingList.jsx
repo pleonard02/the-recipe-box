@@ -2,11 +2,36 @@ import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
 import { useState } from "react";
 
+function startOfWeek(date) {
+  const day = new Date(date);
+  day.setHours(12, 0, 0, 0);
+  day.setDate(day.getDate() - day.getDay());
+  return day;
+}
+
+function weekKey(date) {
+  return startOfWeek(date).toISOString().slice(0, 10);
+}
+
 function ShoppingList() {
   const { token } = useAuth();
 
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [unit, setUnit] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [makeWeeklyBuy, setMakeWeeklyBuy] = useState(false);
+  const [selectedWeek, setSelectedWeek] = useState(() =>
+    startOfWeek(new Date()),
+  );
+  const [isCreatingList, setIsCreatingList] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [actionError, setActionError] = useState("");
+  const { data: weeklyData, refetch: refetchWeekly } = useFetch(
+    "http://localhost:3000/api/shopping-list/weekly-buys",
+    token,
+  );
+  const weeklyBuys = weeklyData?.weeklyBuys || [];
 
   const { data, isLoading, error, refetch } = useFetch(
     "http://localhost:3000/api/shopping-list",
@@ -14,11 +39,25 @@ function ShoppingList() {
   );
 
   const shoppingLists = data?.shoppingLists || [];
-  const currentList = shoppingLists[0];
+  const currentList = shoppingLists.find(
+    (list) => weekKey(list.weekOf) === weekKey(selectedWeek),
+  );
+
+  function changeWeek(amount) {
+    setSelectedWeek((previous) => {
+      const next = new Date(previous);
+      next.setDate(next.getDate() + amount * 7);
+      return startOfWeek(next);
+    });
+    setNotice("");
+    setActionError("");
+  }
 
   const [editingItemId, setEditingItemId] = useState(null);
   const [editName, setEditName] = useState("");
   const [editQuantity, setEditQuantity] = useState("");
+  const [editUnit, setEditUnit] = useState("");
+  const [editWeeklyBuy, setEditWeeklyBuy] = useState(false);
 
   if (isLoading) {
     return <p>Loading shopping list...</p>;
@@ -31,7 +70,13 @@ function ShoppingList() {
   async function handleAddItem(event) {
     event.preventDefault();
 
-    if (!name.trim() || !currentList) {
+    if (
+      !name.trim() ||
+      !currentList ||
+      !Number.isFinite(Number(quantity)) ||
+      Number(quantity) <= 0
+    ) {
+      setActionError("Enter an item name and a quantity greater than zero.");
       return;
     }
 
@@ -45,8 +90,10 @@ function ShoppingList() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            name,
-            quantity,
+            name: name.trim(),
+            quantity: Number(quantity),
+            unit: unit.trim(),
+            makeWeeklyBuy,
           }),
         },
       );
@@ -59,13 +106,25 @@ function ShoppingList() {
 
       setName("");
       setQuantity("");
+      setUnit("");
+      setMakeWeeklyBuy(false);
+      setShowAddForm(false);
+      setActionError("");
+      refetchWeekly();
       refetch();
     } catch (error) {
-      console.error("Add shopping item error:", error);
+      setActionError(error.message);
     }
   }
 
   async function handleCreateShoppingList() {
+    if (currentList || isCreatingList) {
+      setNotice("A shopping list already exists for this week.");
+      return;
+    }
+    setIsCreatingList(true);
+    setActionError("");
+    setNotice("");
     try {
       const response = await fetch("http://localhost:3000/api/shopping-list", {
         method: "POST",
@@ -73,21 +132,21 @@ function ShoppingList() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          weekOf: new Date(),
-          items: [],
-        }),
+        body: JSON.stringify({ weekOf: selectedWeek.toISOString(), items: [] }),
       });
-
       const result = await response.json();
-
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(result.message || "Could not create shopping list.");
-      }
-
+      setNotice(
+        response.status === 201
+          ? "Shopping list created. Your Weekly Buys have been added."
+          : "This week's shopping list already exists.",
+      );
       refetch();
     } catch (error) {
-      console.error("Create shopping list error:", error);
+      setActionError(error.message);
+    } finally {
+      setIsCreatingList(false);
     }
   }
 
@@ -120,10 +179,20 @@ function ShoppingList() {
   function startEditing(item) {
     setEditingItemId(item._id);
     setEditName(item.name);
-    setEditQuantity(item.quantity);
+    setEditQuantity(String(item.quantity ?? ""));
+    setEditUnit(item.unit || "");
+    setEditWeeklyBuy(Boolean(item.weeklyBuy));
   }
 
   async function handleEditItem(listId, itemId) {
+    if (
+      !editName.trim() ||
+      !Number.isFinite(Number(editQuantity)) ||
+      Number(editQuantity) <= 0
+    ) {
+      setActionError("Enter an item name and a quantity greater than zero.");
+      return;
+    }
     try {
       const response = await fetch(
         `http://localhost:3000/api/shopping-list/${listId}/items/${itemId}`,
@@ -134,8 +203,10 @@ function ShoppingList() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            name: editName,
-            quantity: editQuantity,
+            name: editName.trim(),
+            quantity: Number(editQuantity),
+            unit: editUnit.trim(),
+            makeWeeklyBuy: editWeeklyBuy,
           }),
         },
       );
@@ -149,10 +220,13 @@ function ShoppingList() {
       setEditingItemId(null);
       setEditName("");
       setEditQuantity("");
-
+      setEditUnit("");
+      setEditWeeklyBuy(false);
+      setActionError("");
+      refetchWeekly();
       refetch();
     } catch (error) {
-      console.error("Edit shopping item error:", error);
+      setActionError(error.message);
     }
   }
 
@@ -180,6 +254,59 @@ function ShoppingList() {
     }
   }
 
+  async function handlePutAway(listId, item) {
+    const answer = window.prompt(
+      `How much ${item.name} are you putting away? Enter a number followed by an optional unit (example: 2 lb or 3 cans).`,
+      `${item.quantity ?? ""} ${item.unit || ""}`.trim(),
+    );
+    if (answer === null) return;
+    const match = answer.trim().match(/^([0-9]+(?:\.[0-9]+)?)\s*(.*)$/);
+    if (!match || Number(match[1]) <= 0) {
+      setActionError(
+        "Enter a number followed by an optional unit, such as 2 lb.",
+      );
+      return;
+    }
+    try {
+      setActionError("");
+      const response = await fetch(
+        `http://localhost:3000/api/shopping-list/${listId}/items/${item._id}/put-away`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ quantity: Number(match[1]), unit: match[2] }),
+        },
+      );
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result.message || "Could not put away item.");
+      refetch();
+    } catch (error) {
+      setActionError(error.message);
+    }
+  }
+
+  async function handleRemoveWeeklyBuy(buyId) {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/shopping-list/weekly-buys/${buyId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result.message || "Could not remove Weekly Buy.");
+      refetchWeekly();
+    } catch (error) {
+      setActionError(error.message);
+    }
+  }
+
   return (
     <main className="main min-h-screen bg-[#fffefa] px-8 py-10">
       <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#1677b8]">
@@ -192,65 +319,174 @@ function ShoppingList() {
         Keep track of what you need for the week.
       </p>
 
-      {currentList && (
-        <form
-          onSubmit={handleAddItem}
-          className="mt-8 flex flex-wrap items-end gap-4 rounded-2xl bg-white p-6 shadow-sm"
-        >
-          <div className="min-w-[220px] flex-1">
-            <label
-              htmlFor="item-name"
-              className="mb-2 block text-sm font-semibold text-[#0d5686]"
+      {notice && (
+        <p role="status" className="mt-4 text-[#0d5686]">
+          {notice}
+        </p>
+      )}
+      {actionError && (
+        <p role="alert" className="mt-4 text-red-600">
+          {actionError}
+        </p>
+      )}
+      <section className="mt-6 rounded-xl bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-semibold text-[#0d5686]">Weekly Buys</h2>
+        <p className="text-sm text-[#5f6b70]">
+          These automatically appear when you create a new weekly shopping list.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {weeklyBuys.map((buy) => (
+            <span
+              key={buy._id}
+              className="rounded-lg bg-[#fff3a6] px-3 py-2 text-sm"
             >
-              Item
-            </label>
-
-            <input
-              id="item-name"
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Milk, lemons, chicken..."
-              className="w-full rounded-xl border border-[#dbe3e6] px-4 py-2.5 outline-none focus:border-[#1677b8]"
-            />
-          </div>
-
-          <div className="w-28">
-            <label
-              htmlFor="quantity"
-              className="mb-2 block text-sm font-semibold text-[#0d5686]"
-            >
-              Quantity
-            </label>
-
-            <input
-              id="quantity"
-              type="text"
-              value={quantity}
-              onChange={(event) => setQuantity(event.target.value)}
-              placeholder="5 lb bag"
-              className="w-full rounded-xl border border-[#dbe3e6] px-4 py-2.5 outline-none focus:border-[#1677b8]"
-            />
-          </div>
-
+              {buy.name} ({buy.quantity}
+              {buy.unit ? ` ${buy.unit}` : ""}){" "}
+              <button
+                type="button"
+                onClick={() => handleRemoveWeeklyBuy(buy._id)}
+                aria-label={`Stop recurring ${buy.name}`}
+                className="ml-2 font-bold"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+        <div className="mt-5 flex flex-wrap items-center gap-3">
           <button
-            type="submit"
-            className="rounded-xl bg-[#0d5686] px-6 py-2.5 font-semibold text-[#fff3a6] transition hover:-translate-y-0.5"
+            type="button"
+            onClick={() => changeWeek(-1)}
+            className="rounded-lg border border-[#dbe3e6] px-4 py-2 font-semibold text-[#0d5686]"
           >
-            + Add Item
+            ← Previous Week
           </button>
-        </form>
+          <strong className="text-[#0d5686]">
+            Week of{" "}
+            {selectedWeek.toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </strong>
+          <button
+            type="button"
+            onClick={() => changeWeek(1)}
+            className="rounded-lg border border-[#dbe3e6] px-4 py-2 font-semibold text-[#0d5686]"
+          >
+            Next Week →
+          </button>
+        </div>
+        {!currentList && (
+          <button
+            type="button"
+            onClick={handleCreateShoppingList}
+            disabled={isCreatingList}
+            className="mt-4 rounded-lg bg-[#0d5686] px-4 py-2 font-semibold text-white disabled:opacity-50"
+          >
+            {isCreatingList ? "Creating..." : "Create List for This Week"}
+          </button>
+        )}
+      </section>
+      {currentList && (
+        <section className="mt-8 rounded-2xl bg-white p-6 shadow-sm">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowAddForm((previous) => !previous)}
+              aria-expanded={showAddForm}
+              className="ml-auto block w-fit rounded-xl bg-[#0d5686] px-5 py-2.5 font-semibold text-[#fff3a6]"
+            >
+              {showAddForm ? "Cancel Adding Item" : "+ Add Item"}
+            </button>
+          </div>
+          {showAddForm && (
+            <form
+              onSubmit={handleAddItem}
+              className="mt-5 flex flex-wrap items-end gap-4"
+            >
+              <div className="min-w-[220px] flex-1">
+                <label
+                  htmlFor="item-name"
+                  className="mb-2 block text-sm font-semibold text-[#0d5686]"
+                >
+                  Item
+                </label>
+                <input
+                  id="item-name"
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Chicken thighs"
+                  className="w-full rounded-xl border border-[#dbe3e6] px-4 py-2.5 outline-none focus:border-[#1677b8]"
+                />
+              </div>
+              <div className="w-28">
+                <label
+                  htmlFor="quantity"
+                  className="mb-2 block text-sm font-semibold text-[#0d5686]"
+                >
+                  Quantity
+                </label>
+                <input
+                  id="quantity"
+                  type="number"
+                  min="0.01"
+                  step="any"
+                  required
+                  value={quantity}
+                  onChange={(event) => setQuantity(event.target.value)}
+                  placeholder="2"
+                  className="w-full rounded-xl border border-[#dbe3e6] px-4 py-2.5 outline-none focus:border-[#1677b8]"
+                />
+              </div>
+              <div className="w-32">
+                <label
+                  htmlFor="item-unit"
+                  className="mb-2 block text-sm font-semibold text-[#0d5686]"
+                >
+                  Unit
+                </label>
+                <input
+                  id="item-unit"
+                  type="text"
+                  value={unit}
+                  onChange={(event) => setUnit(event.target.value)}
+                  placeholder="lb, count, bag"
+                  className="w-full rounded-xl border border-[#dbe3e6] px-4 py-2.5 outline-none focus:border-[#1677b8]"
+                />
+              </div>
+              <label className="flex items-center gap-2 pb-2 text-sm text-[#0d5686]">
+                <input
+                  type="checkbox"
+                  checked={makeWeeklyBuy}
+                  onChange={(event) => setMakeWeeklyBuy(event.target.checked)}
+                  className="h-4 w-4 accent-[#0d5686]"
+                />
+                Buy every week
+              </label>
+              <button
+                type="submit"
+                className="rounded-xl bg-[#0d5686] px-6 py-2.5 font-semibold text-[#fff3a6]"
+              >
+                Save Item
+              </button>
+            </form>
+          )}
+        </section>
       )}
 
       <section className="mt-8">
-        {shoppingLists.length === 0 ? (
+        {!currentList ? (
           <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
             <h2 className="text-xl font-semibold text-[#0d5686]">
-              Your shopping list is empty
+              No shopping list for this week
             </h2>
 
             <p className="mt-2 text-sm text-[#7c858b]">
-              Add your first grocery item to get started.
+              Create a list for the selected week to automatically add your
+              Weekly Buys.
             </p>
 
             <button
@@ -258,11 +494,11 @@ function ShoppingList() {
               onClick={handleCreateShoppingList}
               className="mt-5 rounded-xl bg-[#0d5686] px-6 py-2.5 font-semibold text-[#fff3a6]"
             >
-              Create Shopping List
+              Create List for This Week
             </button>
           </div>
         ) : (
-          shoppingLists.map((list) => (
+          [currentList].map((list) => (
             <div
               key={list._id}
               className="mb-6 rounded-2xl bg-white p-6 shadow-sm"
@@ -288,19 +524,47 @@ function ShoppingList() {
                             <input
                               type="text"
                               value={editName}
-                              onChange={(event) => setEditName(event.target.value)}
+                              onChange={(event) =>
+                                setEditName(event.target.value)
+                              }
                               className="flex-1 rounded-lg border border-[#dbe3e6] px-3 py-2 outline-none focus:border-[#1677b8]"
                             />
 
                             <input
-                              type="text"
+                              type="number"
+                              min="0.01"
+                              step="any"
                               value={editQuantity}
-                              onChange={(event) => setEditQuantity(event.target.value)}
-                              placeholder="5 lb bag"
-                              className="w-32 rounded-lg border border-[#dbe3e6] px-3 py-2 outline-none focus:border-[#1677b8]"
+                              onChange={(event) =>
+                                setEditQuantity(event.target.value)
+                              }
+                              placeholder="2"
+                              aria-label="Edit quantity"
+                              className="w-24 rounded-lg border border-[#dbe3e6] px-3 py-2 outline-none focus:border-[#1677b8]"
+                            />
+                            <input
+                              type="text"
+                              value={editUnit}
+                              onChange={(event) =>
+                                setEditUnit(event.target.value)
+                              }
+                              placeholder="lb"
+                              aria-label="Edit unit"
+                              className="w-24 rounded-lg border border-[#dbe3e6] px-3 py-2 outline-none focus:border-[#1677b8]"
                             />
                           </div>
 
+                          <label className="flex items-center gap-2 text-sm text-[#0d5686]">
+                            <input
+                              type="checkbox"
+                              checked={editWeeklyBuy}
+                              onChange={(event) =>
+                                setEditWeeklyBuy(event.target.checked)
+                              }
+                              className="h-4 w-4 accent-[#0d5686]"
+                            />
+                            Buy every week
+                          </label>
                           <div className="flex gap-2">
                             <button
                               type="button"
@@ -325,9 +589,15 @@ function ShoppingList() {
                             <p className="font-semibold text-[#0d5686]">
                               {item.name}
                             </p>
+                            {item.weeklyBuy && (
+                              <span className="text-xs text-[#1677b8]">
+                                Weekly Buy
+                              </span>
+                            )}
 
                             <p className="text-sm text-[#7c858b]">
                               Quantity: {item.quantity}
+                              {item.unit ? ` ${item.unit}` : ""}
                             </p>
                           </div>
 
@@ -348,6 +618,21 @@ function ShoppingList() {
                               <option value="purchased">Purchased</option>
                             </select>
 
+                            {item.status === "purchased" &&
+                              !item.kitchenItem && (
+                                <button
+                                  type="button"
+                                  onClick={() => handlePutAway(list._id, item)}
+                                  className="rounded-lg bg-[#f6d447] px-3 py-2 text-sm font-semibold text-[#0d5686]"
+                                >
+                                  Put Away in Kitchen
+                                </button>
+                              )}
+                            {item.kitchenItem && (
+                              <span className="text-xs text-green-700">
+                                In Kitchen ✓
+                              </span>
+                            )}
                             <button
                               type="button"
                               onClick={() => startEditing(item)}
@@ -358,7 +643,9 @@ function ShoppingList() {
 
                             <button
                               type="button"
-                              onClick={() => handleDeleteItem(list._id, item._id)}
+                              onClick={() =>
+                                handleDeleteItem(list._id, item._id)
+                              }
                               className="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-500 hover:bg-red-50"
                             >
                               Delete

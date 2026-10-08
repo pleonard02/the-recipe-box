@@ -2,16 +2,15 @@
   "name": "the-recipe-box",
   "private": true,
   "version": "0.0.0",
-  "type": "commonjs"
-},
-"scripts": {
-  "dev": "vite",
-  "server": "nodemon server/server.js",
-  "start": "node server/server.js",
-  "build": "vite build",
-  "lint": "eslint .",
-  "preview": "vite preview"
-},
+  "type": "commonjs",
+  "scripts": {
+    "dev": "vite",
+    "server": "nodemon server/server.js",
+    "start": "node server/server.js",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "bcrypt": "^6.0.0",

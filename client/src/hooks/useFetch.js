@@ -42,13 +42,10 @@ function useFetch(url, token) {
         }
 
         const result = JSON.parse(responseText);
-        setData(result);
+        if (!controller.signal.aborted) setData(result);
         
       } catch (caughtError) {
-        if (
-          caughtError instanceof DOMException &&
-          caughtError.name === "AbortError"
-        ) {
+        if (controller.signal.aborted) {
           return;
         }
 

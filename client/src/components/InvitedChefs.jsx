@@ -141,7 +141,7 @@ function InvitedChefs({ recipeId, token, refreshKey = 0 }) {
                   type="button"
                   onClick={() => handleRemove(share._id)}
                   disabled={busyId !== null}
-                  className="rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                  className="btn btn-danger"
                 >
                   {busyId === share._id ? "Updating..." : "Remove Access"}
                 </button>

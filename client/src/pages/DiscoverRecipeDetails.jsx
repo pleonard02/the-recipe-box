@@ -26,6 +26,10 @@ function DiscoverRecipeDetails() {
     (recipe) => recipe.source === "mealdb" && recipe.externalId === mealId,
   );
 
+  const activeSavedRecipe = savedFavorite?.externalId === mealId
+    ? savedFavorite
+    : existingSavedRecipe;
+
   if (isLoading) {
     return (
       <main className="main">
@@ -76,30 +80,24 @@ function DiscoverRecipeDetails() {
     try {
       setFavoriteError("");
 
-      if (existingSavedRecipe || savedFavorite) {
-        const recipeToDelete = existingSavedRecipe || savedFavorite;
-
+      if (activeSavedRecipe) {
         const response = await fetch(
-          `${API_URL}/api/recipe/${recipeToDelete._id}`,
+          `${API_URL}/api/recipe/${activeSavedRecipe._id}`,
           {
-            method: "DELETE",
+            method: "PATCH",
             headers: {
+              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
+            body: JSON.stringify({ isFavorite: !activeSavedRecipe.isFavorite }),
           },
         );
-
         const result = await response.json();
-
         if (!response.ok) {
-          throw new Error(
-            result.message || "Could not remove recipe from your Recipe Box.",
-          );
+          throw new Error(result.message || "Could not update favorite.");
         }
-
-        setSavedFavorite(null);
+        setSavedFavorite(result.recipe);
         refetchSavedRecipes();
-
         return;
       }
 
@@ -169,21 +167,18 @@ function DiscoverRecipeDetails() {
                 disabled={isFavoriteUpdating}
                 aria-busy={isFavoriteUpdating}
                 aria-label={
-                  savedFavorite?.isFavorite
+                  activeSavedRecipe?.isFavorite
                     ? `Remove ${meal.strMeal} from favorites`
                     : `Add ${meal.strMeal} to favorites`
                 }
-                className={`inline-flex items-center gap-2 rounded-full px-5 py-2 font-semibold shadow-sm transition ${
-                  savedFavorite?.isFavorite
-                    ? "bg-[#f6d447] text-[#0d5686]"
-                    : "bg-[#fff3a6] text-[#0d5686] hover:bg-[#f6d447]"
-                }`}
+                aria-pressed={activeSavedRecipe?.isFavorite}
+                className={`btn ${activeSavedRecipe?.isFavorite ? "btn-accent" : "btn-secondary"}`}
               >
                 <span className="text-2xl leading-none">
-                  {savedFavorite?.isFavorite ? "♥" : "♡"}
+                  {activeSavedRecipe?.isFavorite ? "♥" : "♡"}
                 </span>
 
-                {savedFavorite?.isFavorite
+                {activeSavedRecipe?.isFavorite
                   ? "Remove from Favorites"
                   : "Add to Favorites"}
               </button>

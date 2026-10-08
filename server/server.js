@@ -33,6 +33,9 @@ app.use("/api/recipe", recipeSuggestionRouter);
 const recipeRouter = require("./routes/recipeRoutes.js");
 app.use("/api/recipe", recipeRouter);
 
+const uploadRoutes = require("./routes/uploadRoutes");
+app.use("/api/upload", uploadRoutes);
+
 const mealPlanRouter = require("./routes/mealPlanRoutes.js");
 app.use("/api/meal-plan", mealPlanRouter);
 

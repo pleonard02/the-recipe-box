@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_URL } from "../config/api";
 
 function createIngredient() {
   return { name: "", quantity: "", unit: "" };
@@ -7,6 +8,7 @@ function createIngredient() {
 const emptyRecipe = {
   name: "",
   description: "",
+  image: "",
   ingredients: [createIngredient()],
   instructions: "",
   prepTime: "",
@@ -16,8 +18,21 @@ const emptyRecipe = {
 };
 
 function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
-  const [recipe, setRecipe] = useState(editingRecipe || emptyRecipe);
+  const [recipe, setRecipe] = useState(() => ({
+    ...emptyRecipe,
+    ...editingRecipe,
+    ...Object.fromEntries(["prepTime", "cookTime", "servings"].map((field) => [
+      field,
+      Array.isArray(editingRecipe?.[field])
+        ? editingRecipe[field][0] ?? ""
+        : editingRecipe?.[field] ?? "",
+    ])),
+    ingredients: editingRecipe?.ingredients?.length
+      ? editingRecipe.ingredients
+      : [createIngredient()],
+  }));
   const [formError, setFormError] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
@@ -75,7 +90,7 @@ function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
 
     const hasValidIngredient = recipe.ingredients.some(
       (ingredient) =>
-        ingredient.name.trim() || ingredient.quantity || ingredient.unit,
+        ingredient.name?.trim(),
     );
 
     if (
@@ -89,24 +104,60 @@ function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
       return;
     }
 
-    const recipeData = {
-      ...recipe,
-      prepTime: Number(recipe.prepTime),
-      cookTime: Number(recipe.cookTime),
-      servings: Number(recipe.servings),
-      ingredients: recipe.ingredients.map((ingredient) => ({
-        ...ingredient,
-        quantity: Number(ingredient.quantity),
-      })),
-    };
-
-    const url = editingRecipe
-      ? `http://localhost:3000/api/recipe/${editingRecipe._id}`
-      : "http://localhost:3000/api/recipe";
-
-    const method = editingRecipe ? "PATCH" : "POST";
+    const validNumber = (value, minimum) =>
+      value === "" || (Number.isFinite(Number(value)) && Number(value) >= minimum);
+    if (
+      !validNumber(recipe.prepTime, 0) ||
+      !validNumber(recipe.cookTime, 0) ||
+      !validNumber(recipe.servings, 1) ||
+      recipe.ingredients.some((ingredient) => !validNumber(ingredient.quantity, 0))
+    ) {
+      setFormError("Enter nonnegative times and quantities, and at least one serving.");
+      return;
+    }
 
     try {
+      let imageUrl = recipe.image || "";
+
+      if (selectedImage) {
+        const formData = new FormData();
+        formData.append("image", selectedImage);
+
+        const uploadResponse = await fetch(`${API_URL}/api/upload/recipe-image`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        const uploadData = await uploadResponse.json();
+
+        if (!uploadResponse.ok) {
+          throw new Error(uploadData.message || "Image upload failed.");
+        }
+
+        imageUrl = uploadData.image;
+      }
+
+      const recipeData = {
+        ...recipe,
+        image: imageUrl,
+        prepTime: Number(recipe.prepTime),
+        cookTime: Number(recipe.cookTime),
+        servings: Number(recipe.servings),
+        ingredients: recipe.ingredients.filter((ingredient) => ingredient.name?.trim()).map((ingredient) => ({
+          ...ingredient,
+          quantity: Number(ingredient.quantity),
+        })),
+      };
+
+      const url = editingRecipe
+        ? `${API_URL}/api/recipe/${editingRecipe._id}`
+        : `${API_URL}/api/recipe`;
+
+      const method = editingRecipe ? "PATCH" : "POST";
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -133,26 +184,26 @@ function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
   }
 
   return (
-    <section className="mx-auto max-w-3xl rounded-[28px] border border-[#dbe3e6] bg-[#fffdf7] px-6 py-8 shadow-[0_20px_60px_rgba(13,86,134,0.08)] sm:px-8">
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#1677b8]">
-            THE RECIPE BOX
-          </p>
-          <h2 className="text-3xl font-semibold text-[#0d5686]">
-            Add a Recipe
-          </h2>
+    <section className="recipe-form-panel mx-auto max-w-3xl rounded-[28px] border border-[#dbe3e6] bg-[#fffdf7] px-6 py-8 shadow-[0_20px_60px_rgba(13,86,134,0.08)] sm:px-8">
+      <form onSubmit={handleSubmit} noValidate className="recipe-form">
+        <div className="recipe-form-header flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#1677b8]">
+              THE RECIPE BOX
+            </p>
+            <h2 className="text-3xl font-semibold text-[#0d5686]">
+              Add a Recipe
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn btn-secondary"
+          >
+            Cancel
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-full border border-[#dbe3e6] bg-white px-4 py-2 text-sm font-medium text-[#0d5686] transition hover:border-[#1677b8] hover:text-[#1677b8]"
-        >
-          Cancel
-        </button>
-      </div>
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <div className="space-y-2">
           <label
             className="block text-sm font-semibold text-[#0d5686]"
@@ -187,6 +238,26 @@ function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
             rows={3}
             placeholder="Tell people what makes this recipe special..."
             className="mt-1 w-full rounded-xl border border-[#dbe3e6] bg-[#fcfcfa] px-4 py-3 text-base text-[#253238] placeholder-[#7c858b] transition focus:border-[#1677b8] focus:outline-none focus:ring-4 focus:ring-[#1677b8]/10"
+          />
+        </div>
+
+        <div className="space-y-3">
+          <label
+            htmlFor="image"
+            className="block text-sm font-semibold text-[#0d5686]"
+          >
+            Recipe Photo
+          </label>
+
+          <input
+            id="image"
+            type="file"
+            name="image"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(event) => {
+              setSelectedImage(event.target.files?.[0] || null);
+            }}
+            className="w-full rounded-xl border border-[#dbe3e6] bg-[#fcfcfa] px-4 py-3 text-base text-[#253238]"
           />
         </div>
 
@@ -254,7 +325,7 @@ function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
             <button
               type="button"
               onClick={handleAddIngredient}
-              className="rounded-full bg-[#f6d447] px-3 py-1.5 text-sm font-semibold text-[#0d5686] transition hover:bg-[#fff3a6]"
+              className="btn btn-accent btn-sm"
             >
               + Add ingredient
             </button>
@@ -268,7 +339,7 @@ function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
               <input
                 type="text"
                 placeholder="Ingredient"
-                value={ingredient.name}
+                value={ingredient.name ?? ""}
                 onChange={(event) =>
                   handleIngredientChange(index, "name", event.target.value)
                 }
@@ -278,7 +349,7 @@ function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
               <input
                 type="number"
                 placeholder="Qty"
-                value={ingredient.quantity}
+                value={ingredient.quantity ?? ""}
                 onChange={(event) =>
                   handleIngredientChange(index, "quantity", event.target.value)
                 }
@@ -289,7 +360,7 @@ function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
               <input
                 type="text"
                 placeholder="Unit"
-                value={ingredient.unit}
+                value={ingredient.unit ?? ""}
                 onChange={(event) =>
                   handleIngredientChange(index, "unit", event.target.value)
                 }
@@ -299,7 +370,7 @@ function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
               <button
                 type="button"
                 onClick={() => handleRemoveIngredient(index)}
-                className="rounded-xl border border-[#dbe3e6] px-3 py-2 text-sm font-medium text-[#0d5686] transition hover:border-[#1677b8] hover:text-[#1677b8]"
+                className="btn btn-secondary btn-sm"
               >
                 Remove
               </button>
@@ -349,14 +420,14 @@ function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-[#dbe3e6] bg-white px-5 py-3 text-sm font-semibold text-[#0d5686] transition hover:border-[#1677b8] hover:text-[#1677b8]"
+            className="btn btn-secondary"
           >
             Close
           </button>
 
           <button
             type="submit"
-            className="rounded-xl border border-[#0d5686] bg-[#0d5686] px-5 py-3 text-sm font-semibold text-[#fff3a6] shadow-[0_10px_20px_rgba(13,86,134,0.2)] transition hover:bg-[#1677b8]"
+            className="btn btn-primary"
           >
             Save Recipe
           </button>

@@ -4,6 +4,14 @@ function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
   console.log(recipe.name, recipe.isFavorite);
   return (
     <article className="relative flex min-h-[250px] flex-col rounded-2xl border border-[#dbe3e6] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+      {recipe.image && (
+        <img
+          src={recipe.image}
+          alt={recipe.name}
+          loading="lazy"
+          className="mb-4 h-44 w-full rounded-xl object-cover"
+        />
+      )}
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#1677b8]">
           {recipe.isPublic ? "Public Recipe" : "My Recipe"}
@@ -15,8 +23,9 @@ function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
             console.log("Heart clicked:", recipe);
             onFavorite(recipe);
           }}
-          className={`text-2xl transition hover:scale-110 ${
-            recipe.isFavorite ? "text-[#f0b51d]" : "text-[#0d5686]"
+          aria-pressed={recipe.isFavorite}
+          className={`btn btn-icon relative z-10 ${
+            recipe.isFavorite ? "btn-accent" : "btn-secondary"
           }`}
           aria-label={
             recipe.isFavorite
@@ -67,7 +76,7 @@ function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
             <button
               type="button"
               onClick={() => onEdit(recipe)}
-              className="text-sm font-semibold text-[#1677b8] hover:underline"
+              className="btn btn-secondary btn-sm relative z-10"
             >
               Edit
             </button>
@@ -77,7 +86,7 @@ function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
             <button
               type="button"
               onClick={() => onDelete(recipe._id)}
-              className="text-sm font-semibold text-[#9b3b32] hover:underline"
+              className="btn btn-danger btn-sm relative z-10"
             >
               Delete
             </button>

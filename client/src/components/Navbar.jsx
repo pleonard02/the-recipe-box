@@ -9,7 +9,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 function Sidebar() {
-  const { user, logout } = useAuth();
+  const { token, logout } = useAuth();
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -49,8 +49,8 @@ function Sidebar() {
           <img src={shoppingListIcon} alt="" />
           Shopping List
         </NavLink>
-        {user && (
-          <button type="button" onClick={handleLogout}>
+        {token && (
+          <button className="btn btn-nav" type="button" onClick={handleLogout}>
             Logout
           </button>
         )}

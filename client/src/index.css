@@ -18,10 +18,12 @@
   --olive-green: #75864b;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  font-family: "Libre Caslon Condensed", "Times New Roman", serif;
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    font-family: "Libre Caslon Condensed", "Times New Roman", serif;
+  }
 }
 
 .app-layout {
@@ -32,7 +34,6 @@
 .main {
   flex: 1;
   min-width: 0;
-  padding: 0;
 }
 
 .registration-page {
@@ -120,29 +121,6 @@
   box-shadow: 0 0 0 5px #1677b810;
 }
 
-.registration-submit {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 52px;
-  padding: 14px 20px;
-  border: 1px solid var(--santorini-blue-dark);
-  border-radius: 12px;
-  background: var(--santorini-blue-dark);
-  color: var(--lemon-yellow-light);
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 6px 16px #0d568620;
-  transition: background 150ms, color 150ms;
-}
-
-.registration-submit:hover {
-  background: var(--lemon-yellow-light);
-  color: var(--santorini-blue-dark);
-}
-
-.registration-submit:focus-visible,
 .registration-login a:focus-visible {
   outline: 2px solid var(--santorini-blue);
   outline-offset: 4px;
@@ -295,4 +273,142 @@
   .sidebar-tree {
     display: none;
   }
+}
+
+/* Shared button roles used by pages and reusable components. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms, border-color 150ms, color 150ms;
+}
+
+.btn-primary {
+  background: var(--santorini-blue-dark);
+  border-color: var(--santorini-blue-dark);
+  color: var(--lemon-yellow-light);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--santorini-blue);
+  border-color: var(--santorini-blue);
+}
+
+.btn-secondary {
+  background: var(--white);
+  border-color: #dbe3e6;
+  color: var(--santorini-blue-dark);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #edf6fa;
+  border-color: var(--santorini-blue);
+}
+
+.btn-accent {
+  background: var(--lemon-yellow);
+  border-color: var(--lemon-yellow);
+  color: var(--santorini-blue-dark);
+}
+
+.btn-accent:hover:not(:disabled) {
+  background: var(--lemon-yellow-light);
+  border-color: var(--lemon-yellow-light);
+}
+
+.btn-danger {
+  background: var(--white);
+  border-color: #fecaca;
+  color: #9b2424;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #fff0ed;
+  border-color: #9b2424;
+}
+
+.btn-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.btn-icon {
+  width: 44px;
+  padding: 0;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.btn-tab,
+.btn-nav {
+  background: transparent;
+  color: var(--santorini-blue-dark);
+}
+
+.btn-tab:hover:not(:disabled),
+.btn-nav:hover:not(:disabled) {
+  background: var(--santorini-blue-light);
+}
+
+.btn-tab[aria-pressed="true"] {
+  background: var(--white);
+  border-color: var(--santorini-blue);
+}
+
+.btn-nav {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--santorini-blue);
+  outline-offset: 3px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-block {
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* Keep recipe form spacing above the global reset. */
+.recipe-form-panel {
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 40px);
+}
+
+.recipe-form {
+  display: grid;
+  gap: 24px;
+}
+
+.recipe-form-header {
+  padding-bottom: 8px;
+}
+
+.recipe-form-header p {
+  margin-bottom: 8px;
+}
+
+.recipe-form input:not([type="checkbox"]),
+.recipe-form textarea {
+  padding: 12px 16px;
+}
+
+.recipe-form fieldset {
+  padding: 16px;
 }

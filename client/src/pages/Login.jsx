@@ -1,3 +1,4 @@
+import { API_URL } from "../config/api";
 import { useState } from "react";
 import { useAuth } from "../context/useAuth";
 import welcomeHome from "../assets/welcome-home.png";
@@ -31,7 +32,7 @@ function Login() {
     setSuccessMessage("");
 
     try {
-      const response = await fetch("http://localhost:3000/api/users/login", {
+      const response = await fetch(`${API_URL}/api/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -136,7 +137,7 @@ function Login() {
               />
             </div>
 
-            <button className="registration-submit" type="submit">
+            <button className="btn btn-primary btn-block" type="submit">
               Log In <span aria-hidden="true">→</span>
             </button>
             {errorMessage && (

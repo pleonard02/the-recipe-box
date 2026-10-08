@@ -210,7 +210,7 @@ async function getRecipesSharedWithMe(req, res) {
             .populate("recipe")
             .populate("invitedBy", "username email");
 
-            return res.status(200).json({ sharedRecipes: recipeShares });
+            return res.status(200).json({ sharedRecipes: recipeShares.filter((share) => share.recipe) });
     } catch (error) {
         console.error("Get shared recipes error:", error);
 

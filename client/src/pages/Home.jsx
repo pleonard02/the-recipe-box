@@ -1,3 +1,4 @@
+import { API_URL } from "../config/api";
 import { useState } from "react";
 import recipeBoxLogo from "../assets/recipe-box-logo.png";
 import { useAuth } from "../context/useAuth";
@@ -21,7 +22,7 @@ function Home() {
   const [shuffleCount, setShuffleCount] = useState(0);
 
   const { data: kitchenData, isLoading: kitchenLoading } = useFetch(
-    "http://localhost:3000/api/kitchen-item",
+    `${API_URL}/api/kitchen-item`,
     token,
   );
 
@@ -29,7 +30,7 @@ function Home() {
     data: recipeData,
     isLoading: recipesLoading,
     error: recipesError,
-  } = useFetch("http://localhost:3000/api/recipe", token);
+  } = useFetch(`${API_URL}/api/recipe`, token);
 
   const recipeList = recipeData?.recipes || recipeData || [];
 
@@ -110,7 +111,7 @@ function Home() {
         <button
           type="button"
           onClick={handleShuffle}
-          className="mb-5 rounded-xl bg-[#0d5686] px-5 py-2.5 font-semibold text-[#fff3a6]"
+          className="btn btn-primary mb-5"
         >
           Shuffle Recipes
         </button>

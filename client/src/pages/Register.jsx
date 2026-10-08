@@ -1,3 +1,4 @@
+import { API_URL } from "../config/api";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import welcomeHome from "../assets/welcome-home.png";
@@ -35,7 +36,7 @@ function Register() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/users/register", {
+      const response = await fetch(`${API_URL}/api/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -161,7 +162,7 @@ function Register() {
                 required
               />
             </div>
-            <button className="registration-submit" type="submit">
+            <button className="btn btn-primary btn-block" type="submit">
               Create Account <span aria-hidden="true">→</span>
             </button>
           </form>

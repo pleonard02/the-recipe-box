@@ -1,3 +1,4 @@
+import { API_URL } from "../config/api";
 import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
 import RecipeCard from "../components/RecipeCard";
@@ -6,7 +7,7 @@ function FavoriteRecipes() {
   const { token } = useAuth();
 
   const { data, isLoading, error, refetch } = useFetch(
-    "http://localhost:3000/api/recipe",
+    `${API_URL}/api/recipe`,
     token,
   );
 
@@ -27,7 +28,7 @@ function FavoriteRecipes() {
   async function handleFavorite(recipe) {
     try {
         const response = await fetch(
-            `http://localhost:3000/api/recipe/${recipe._id}`,
+            `${API_URL}/api/recipe/${recipe._id}`,
             {
                 method: "PATCH",
                 headers: {

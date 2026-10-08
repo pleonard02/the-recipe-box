@@ -1,3 +1,4 @@
+import { API_URL } from "../config/api";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
 
@@ -25,7 +26,7 @@ function MyKitchen() {
   useEffect(() => {
     async function getKitchenItems() {
       try {
-        const response = await fetch("http://localhost:3000/api/kitchen-item", {
+        const response = await fetch(`${API_URL}/api/kitchen-item`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -64,8 +65,8 @@ function MyKitchen() {
     try {
       const response = await fetch(
         editingItemId
-          ? `http://localhost:3000/api/kitchen-item/${editingItemId}`
-          : "http://localhost:3000/api/kitchen-item",
+          ? `${API_URL}/api/kitchen-item/${editingItemId}`
+          : `${API_URL}/api/kitchen-item`,
         {
           method: editingItemId ? "PATCH" : "POST",
           headers: {
@@ -129,7 +130,7 @@ function MyKitchen() {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/kitchen-item/${itemId}`,
+        `${API_URL}/api/kitchen-item/${itemId}`,
         {
           method: "DELETE",
           headers: {
@@ -207,7 +208,7 @@ function MyKitchen() {
               if (showAddForm) closeForm();
               else setShowAddForm(true);
             }}
-            className="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-lg bg-[#0d5686] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#09466f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1677b8] sm:self-auto"
+            className="btn btn-primary self-start sm:self-auto"
           >
             <span aria-hidden="true" className="text-lg leading-none">+</span>
             {showAddForm ? "Close form" : "Add item"}
@@ -224,7 +225,7 @@ function MyKitchen() {
               type="button"
               onClick={() => setErrorMessage("")}
               aria-label="Dismiss error"
-              className="font-semibold text-[#9d3428] hover:text-[#70251d]"
+              className="btn btn-secondary btn-sm"
             >
               Dismiss
             </button>
@@ -287,7 +288,7 @@ function MyKitchen() {
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-md px-2 py-1 text-sm font-semibold text-[#66737b] hover:bg-[#f2f5f4] hover:text-[#253238]"
+                className="btn btn-secondary btn-sm"
               >
                 Cancel
               </button>
@@ -359,14 +360,14 @@ function MyKitchen() {
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-lg border border-[#d9e2e8] px-4 py-2.5 text-sm font-semibold text-[#52616a] transition hover:bg-[#f7f8f6]"
+                className="btn btn-secondary"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSaving}
-                className="rounded-lg bg-[#0d5686] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#09466f] disabled:cursor-wait disabled:opacity-60"
+                className="btn btn-primary"
               >
                 {isSaving
                   ? "Saving..."
@@ -429,11 +430,7 @@ function MyKitchen() {
                   type="button"
                   aria-pressed={isActive}
                   onClick={() => setActiveCategory(category.id)}
-                  className={`-mb-px inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold transition ${
-                    isActive
-                      ? "border-[#1677b8] text-[#0d5686]"
-                      : "border-transparent text-[#66737b] hover:border-[#cbd8dc] hover:text-[#253238]"
-                  }`}
+                  className="btn btn-tab shrink-0"
                 >
                   {category.label}
                   <span
@@ -483,7 +480,7 @@ function MyKitchen() {
               <button
                 type="button"
                 onClick={() => setShowAddForm(true)}
-                className="mt-5 rounded-lg bg-[#0d5686] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#09466f]"
+                className="btn btn-primary mt-5"
               >
                 Add your first item
               </button>
@@ -502,7 +499,7 @@ function MyKitchen() {
                   setSearchTerm("");
                   setActiveCategory("all");
                 }}
-                className="mt-4 text-sm font-semibold text-[#1677b8] hover:text-[#0d5686]"
+                className="btn btn-secondary mt-4"
               >
                 Clear filters
               </button>
@@ -579,7 +576,7 @@ function MyKitchen() {
                           type="button"
                           onClick={() => openEditForm(item)}
                           aria-label={`Edit ${item.name}`}
-                          className="rounded-md px-2.5 py-1.5 text-xs font-semibold text-[#1677b8] transition hover:bg-[#edf6fa] hover:text-[#0d5686]"
+                          className="btn btn-secondary btn-sm"
                         >
                           Edit
                         </button>
@@ -588,7 +585,7 @@ function MyKitchen() {
                           onClick={() => handleDelete(item._id)}
                           disabled={deletingItemId === item._id}
                           aria-label={`Delete ${item.name}`}
-                          className="rounded-md px-2.5 py-1.5 text-xs font-semibold text-[#8a5c58] transition hover:bg-[#fff1ef] hover:text-[#9d3428] disabled:opacity-50"
+                          className="btn btn-danger btn-sm"
                         >
                           {deletingItemId === item._id
                             ? "Removing..."

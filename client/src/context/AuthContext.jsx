@@ -1,3 +1,4 @@
+import { API_URL } from "../config/api";
 import { useEffect, useState } from "react";
 import { AuthContext } from "./auth-context";
 
@@ -24,7 +25,7 @@ export function AuthProvider({ children }) {
 
     async function getCurrentUser() {
       try {
-        const response = await fetch("http://localhost:3000/api/users", {
+        const response = await fetch(`${API_URL}/api/users`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         });

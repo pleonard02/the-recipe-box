@@ -27,7 +27,7 @@ function Recipes() {
     error: sharedError,
   } = useFetch(`${API_URL}/api/recipe/shared-with-me`, token);
 
-  const sharedRecipes = sharedData?.sharedRecipes || [];
+  const sharedRecipes = (sharedData?.sharedRecipes || []).filter((share) => share.recipe);
 
   const recipes = data?.recipes || [];
   const activeMealDbSearch = mealDbSearch || searchTerm.trim();
@@ -89,24 +89,6 @@ function Recipes() {
 
   async function handleFavorite(recipe) {
     try {
-      if (recipe.source === "mealdb" && recipe.isFavorite) {
-        const response = await fetch(`${API_URL}/api/recipe/${recipe._id}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Could not update favorite.");
-        }
-
-        refetch();
-        return;
-      }
-
       const response = await fetch(`${API_URL}/api/recipe/${recipe._id}`, {
         method: "PATCH",
         headers: {
@@ -162,7 +144,7 @@ function Recipes() {
               setEditingRecipe(null);
               setShowAddForm(!showAddForm);
             }}
-            className="rounded-xl bg-[#0d5686] px-5 py-3 font-semibold text-[#fff3a6] shadow-sm transition hover:bg-[#1677b8]"
+            className="btn btn-primary"
           >
             {showAddForm ? "Close Form" : "+ Add Recipe"}
           </button>
@@ -171,6 +153,7 @@ function Recipes() {
         {showAddForm && (
           <div className="mt-8">
             <RecipeForm
+              key={editingRecipe?._id || "new"}
               token={token}
               onClose={() => {
                 setShowAddForm(false);
@@ -342,7 +325,7 @@ function Recipes() {
 
           <button
             type="submit"
-            className="rounded-xl bg-[#0d5686] px-6 py-3 font-semibold text-[#fff3a6] transition hover:bg-[#1677b8]"
+            className="btn btn-primary"
           >
             Search
           </button>

@@ -1,3 +1,4 @@
+import { API_URL } from "../config/api";
 import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
 import { useState } from "react";
@@ -9,12 +10,12 @@ function MealPlan() {
   const [editingMeal, setEditingMeal] = useState(null);
 
   const { data, isLoading, error, refetch } = useFetch(
-    "http://localhost:3000/api/meal-plan",
+    `${API_URL}/api/meal-plan`,
     token,
   );
 
   const { data: recipeData } = useFetch(
-    "http://localhost:3000/api/recipe",
+    `${API_URL}/api/recipe`,
     token,
   );
 
@@ -65,6 +66,8 @@ function MealPlan() {
   weekEnd.setDate(currentWeekStart.getDate() + 6);
 
   function handleWeekStart(day) {
+    setSelectedMeals(null);
+    setEditingMeal(null);
     setWeekStartsOn(day);
     localStorage.setItem("weekStartsOn", day);
   }
@@ -86,6 +89,7 @@ function MealPlan() {
 
     setWeekOffset(newOffset);
     setSelectedMeals(null);
+    setEditingMeal(null);
   }
 
   if (isLoading) {
@@ -147,8 +151,8 @@ function MealPlan() {
       });
 
       const url = existingPlan
-        ? `http://localhost:3000/api/meal-plan/${existingPlan._id}`
-        : "http://localhost:3000/api/meal-plan";
+        ? `${API_URL}/api/meal-plan/${existingPlan._id}`
+        : `${API_URL}/api/meal-plan`;
 
       const method = existingPlan ? "PATCH" : "POST";
 
@@ -198,7 +202,7 @@ function MealPlan() {
         <button
           type="button"
           onClick={() => changeWeek(-1)}
-          className="rounded-lg px-4 py-2 text-sm font-semibold text-[#1677b8] transition hover:bg-[#d9effb]"
+          className="btn btn-secondary"
         >
           ← Previous
         </button>
@@ -225,7 +229,7 @@ function MealPlan() {
         <button
           type="button"
           onClick={() => changeWeek(1)}
-          className="rounded-lg px-4 py-2 text-sm font-semibold text-[#1677b8] transition hover:bg-[#d9effb]"
+          className="btn btn-secondary"
         >
           Next →
         </button>
@@ -240,11 +244,8 @@ function MealPlan() {
               key={day}
               type="button"
               onClick={() => handleWeekStart(day)}
-              className={`rounded-lg px-4 py-1.5 text-sm font-semibold capitalize transition ${
-                weekStartsOn === day
-                  ? "bg-white text-[#0d5686] shadow-sm"
-                  : "text-[#69767b]"
-              }`}
+              aria-pressed={weekStartsOn === day}
+              className="btn btn-tab btn-sm capitalize"
             >
               {day}
             </button>
@@ -299,7 +300,7 @@ function MealPlan() {
                                   mealType: mealType.value,
                                 })
                               }
-                              className="text-xs font-semibold text-[#1677b8] hover:underline"
+                              className="btn btn-secondary btn-sm"
                             >
                               Change
                             </button>
@@ -309,7 +310,7 @@ function MealPlan() {
                               onClick={() =>
                                 handleRemoveMeal(day, mealType.value)
                               }
-                              className="text-xs font-semibold text-[#8a5555] hover:underline"
+                              className="btn btn-danger btn-sm"
                             >
                               Remove
                             </button>
@@ -349,7 +350,7 @@ function MealPlan() {
         <button
           type="button"
           onClick={handleSaveMealPlan}
-          className="rounded-xl bg-[#0d5686] px-6 py-3 font-semibold text-[#fff3a6] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+          className="btn btn-primary"
         >
           Save Meal Plan
         </button>

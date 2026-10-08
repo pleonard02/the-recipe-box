@@ -116,11 +116,8 @@ function RecipeDetails() {
                 ? `Remove ${recipe.name} from favorites`
                 : `Add ${recipe.name} to favorites`
             }
-            className={`mt-4 inline-flex items-center gap-2 rounded-full px-5 py-2 font-semibold transition ${
-              recipe.isFavorite
-                ? "bg-[#f6d447] text-[#0d5686]"
-                : "border-2 border-[#0d5686] bg-white text-[#0d5686]"
-            }`}
+            aria-pressed={recipe.isFavorite}
+            className={`btn mt-4 ${recipe.isFavorite ? "btn-accent" : "btn-secondary"}`}
           >
             <span className="text-2xl leading-none">
               {recipe.isFavorite ? "♥" : "♡"}
@@ -156,6 +153,14 @@ function RecipeDetails() {
               </span>
             )}
           </div>
+
+          {recipe.image && (
+            <img
+              src={recipe.image}
+              alt={recipe.image}
+              className="mt-6 max-h-96 w-full rounded-xl object-cover"
+            />
+          )}
         </header>
 
         <div className="grid gap-10 p-8 sm:p-10 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.5fr)]">
@@ -253,7 +258,7 @@ function RecipeDetails() {
             <button
               type="submit"
               disabled={isSharing}
-              className="rounded-xl bg-[#0d5686] px-6 py-3 font-semibold text-[#fff3a6] disabled:opacity-50"
+              className="btn btn-primary"
             >
               {isSharing ? "Inviting..." : "Invite Chef"}
             </button>

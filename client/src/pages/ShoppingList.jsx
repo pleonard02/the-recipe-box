@@ -1,6 +1,7 @@
 import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
 import { useState } from "react";
+import { API_URL } from "../config/api";
 
 function startOfWeek(date) {
   const day = new Date(date);
@@ -28,13 +29,13 @@ function ShoppingList() {
   const [notice, setNotice] = useState("");
   const [actionError, setActionError] = useState("");
   const { data: weeklyData, refetch: refetchWeekly } = useFetch(
-    "http://localhost:3000/api/shopping-list/weekly-buys",
+    `${API_URL}/api/shopping-list/weekly-buys`,
     token,
   );
   const weeklyBuys = weeklyData?.weeklyBuys || [];
 
   const { data, isLoading, error, refetch } = useFetch(
-    "http://localhost:3000/api/shopping-list",
+    `${API_URL}/api/shopping-list`,
     token,
   );
 
@@ -82,7 +83,7 @@ function ShoppingList() {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/shopping-list/${currentList._id}/items`,
+        `${API_URL}/api/shopping-list/${currentList._id}/items`,
         {
           method: "POST",
           headers: {
@@ -126,7 +127,7 @@ function ShoppingList() {
     setActionError("");
     setNotice("");
     try {
-      const response = await fetch("http://localhost:3000/api/shopping-list", {
+      const response = await fetch(`${API_URL}/api/shopping-list`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -153,7 +154,7 @@ function ShoppingList() {
   async function handleStatusChange(listId, itemId, status) {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/shopping-list/${listId}/items/${itemId}`,
+        `${API_URL}/api/shopping-list/${listId}/items/${itemId}`,
         {
           method: "PATCH",
           headers: {
@@ -195,7 +196,7 @@ function ShoppingList() {
     }
     try {
       const response = await fetch(
-        `http://localhost:3000/api/shopping-list/${listId}/items/${itemId}`,
+        `${API_URL}/api/shopping-list/${listId}/items/${itemId}`,
         {
           method: "PATCH",
           headers: {
@@ -233,7 +234,7 @@ function ShoppingList() {
   async function handleDeleteItem(listId, itemId) {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/shopping-list/${listId}/items/${itemId}`,
+        `${API_URL}/api/shopping-list/${listId}/items/${itemId}`,
         {
           method: "DELETE",
           headers: {
@@ -270,7 +271,7 @@ function ShoppingList() {
     try {
       setActionError("");
       const response = await fetch(
-        `http://localhost:3000/api/shopping-list/${listId}/items/${item._id}/put-away`,
+        `${API_URL}/api/shopping-list/${listId}/items/${item._id}/put-away`,
         {
           method: "POST",
           headers: {
@@ -292,7 +293,7 @@ function ShoppingList() {
   async function handleRemoveWeeklyBuy(buyId) {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/shopping-list/weekly-buys/${buyId}`,
+        `${API_URL}/api/shopping-list/weekly-buys/${buyId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -346,7 +347,7 @@ function ShoppingList() {
                 type="button"
                 onClick={() => handleRemoveWeeklyBuy(buy._id)}
                 aria-label={`Stop recurring ${buy.name}`}
-                className="ml-2 font-bold"
+                className="btn btn-danger btn-icon ml-2"
               >
                 ×
               </button>
@@ -357,7 +358,7 @@ function ShoppingList() {
           <button
             type="button"
             onClick={() => changeWeek(-1)}
-            className="rounded-lg border border-[#dbe3e6] px-4 py-2 font-semibold text-[#0d5686]"
+            className="btn btn-secondary"
           >
             ← Previous Week
           </button>
@@ -372,7 +373,7 @@ function ShoppingList() {
           <button
             type="button"
             onClick={() => changeWeek(1)}
-            className="rounded-lg border border-[#dbe3e6] px-4 py-2 font-semibold text-[#0d5686]"
+            className="btn btn-secondary"
           >
             Next Week →
           </button>
@@ -382,7 +383,7 @@ function ShoppingList() {
             type="button"
             onClick={handleCreateShoppingList}
             disabled={isCreatingList}
-            className="mt-4 rounded-lg bg-[#0d5686] px-4 py-2 font-semibold text-white disabled:opacity-50"
+            className="btn btn-primary mt-4"
           >
             {isCreatingList ? "Creating..." : "Create List for This Week"}
           </button>
@@ -395,7 +396,7 @@ function ShoppingList() {
               type="button"
               onClick={() => setShowAddForm((previous) => !previous)}
               aria-expanded={showAddForm}
-              className="ml-auto block w-fit rounded-xl bg-[#0d5686] px-5 py-2.5 font-semibold text-[#fff3a6]"
+              className="btn btn-primary ml-auto w-fit"
             >
               {showAddForm ? "Cancel Adding Item" : "+ Add Item"}
             </button>
@@ -468,7 +469,7 @@ function ShoppingList() {
               </label>
               <button
                 type="submit"
-                className="rounded-xl bg-[#0d5686] px-6 py-2.5 font-semibold text-[#fff3a6]"
+                className="btn btn-primary"
               >
                 Save Item
               </button>
@@ -492,7 +493,7 @@ function ShoppingList() {
             <button
               type="button"
               onClick={handleCreateShoppingList}
-              className="mt-5 rounded-xl bg-[#0d5686] px-6 py-2.5 font-semibold text-[#fff3a6]"
+              className="btn btn-primary mt-5"
             >
               Create List for This Week
             </button>
@@ -569,7 +570,7 @@ function ShoppingList() {
                             <button
                               type="button"
                               onClick={() => handleEditItem(list._id, item._id)}
-                              className="rounded-lg bg-[#0d5686] px-3 py-2 text-sm font-semibold text-[#fff3a6]"
+                              className="btn btn-primary btn-sm"
                             >
                               Save
                             </button>
@@ -577,7 +578,7 @@ function ShoppingList() {
                             <button
                               type="button"
                               onClick={() => setEditingItemId(null)}
-                              className="rounded-lg border border-[#dbe3e6] px-3 py-2 text-sm font-semibold text-[#5f6b70]"
+                              className="btn btn-secondary btn-sm"
                             >
                               Cancel
                             </button>
@@ -623,7 +624,7 @@ function ShoppingList() {
                                 <button
                                   type="button"
                                   onClick={() => handlePutAway(list._id, item)}
-                                  className="rounded-lg bg-[#f6d447] px-3 py-2 text-sm font-semibold text-[#0d5686]"
+                                  className="btn btn-accent btn-sm"
                                 >
                                   Put Away in Kitchen
                                 </button>
@@ -636,7 +637,7 @@ function ShoppingList() {
                             <button
                               type="button"
                               onClick={() => startEditing(item)}
-                              className="rounded-lg border border-[#1677b8] px-3 py-2 text-sm font-semibold text-[#1677b8] hover:bg-[#edf6fa]"
+                              className="btn btn-secondary btn-sm"
                             >
                               Edit
                             </button>
@@ -646,7 +647,7 @@ function ShoppingList() {
                               onClick={() =>
                                 handleDeleteItem(list._id, item._id)
                               }
-                              className="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-500 hover:bg-red-50"
+                              className="btn btn-danger btn-sm"
                             >
                               Delete
                             </button>

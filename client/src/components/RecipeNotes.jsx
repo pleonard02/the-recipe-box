@@ -85,7 +85,7 @@ function RecipeNotes({ recipeId, token }) {
         <button
           type="submit"
           disabled={isSubmitting || !noteText.trim()}
-          className="mt-3 rounded-xl bg-[#0d5686] px-6 py-3 font-semibold text-[#fff3a6] disabled:opacity-50"
+          className="btn btn-primary mt-3"
         >
           {isSubmitting ? "Saving..." : "Add Note"}
         </button>

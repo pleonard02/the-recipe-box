@@ -1,9 +1,13 @@
 const Recipe = require("../models/Recipe");
 const RecipeShare = require("../models/RecipeShare");
+const { isObjectIdOrHexString } = require("mongoose");
 
 async function verifyRecipeAccess(req, res, next) {
   try {
     const { recipeId } = req.params;
+    if (!isObjectIdOrHexString(recipeId)) {
+      return res.status(400).json({ message: "Invalid recipe ID." });
+    }
 
     const recipe = await Recipe.findById(recipeId);
 

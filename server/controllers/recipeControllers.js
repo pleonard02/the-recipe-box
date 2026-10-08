@@ -1,4 +1,5 @@
 const Recipe = require("../models/Recipe");
+const RecipeShare = require("../models/RecipeShare");
 
 async function getAllRecipes(req, res) {
   try {
@@ -60,7 +61,12 @@ async function getOneRecipe(req, res) {
       return res.status(404).json({ message: "Recipe not found or recipe access was not loaded." });
     }
 
-    return res.status(200).json(req.recipe);
+    const shared = req.recipeRole !== "executive-chef";
+    return res.status(200).json({
+      ...req.recipe.toObject(),
+      isShared: shared,
+      isFavorite: shared ? Boolean(req.recipeShare.isFavorite) : req.recipe.isFavorite,
+    });
   } catch (error) {
     console.error("Get one recipe error:", error);
     return res.status(400).json({ message: "Could not retrieve recipe." });
@@ -84,7 +90,7 @@ async function updateRecipe(req, res) {
     if (req.body.cookTime !== undefined) recipe.cookTime = req.body.cookTime;
     if (req.body.servings !== undefined) recipe.servings = req.body.servings;
     if (req.body.isPublic !== undefined) recipe.isPublic = req.body.isPublic;
-    if (req.body.isFavorite !== undefined)
+    if (req.recipeRole === "executive-chef" && req.body.isFavorite !== undefined)
       recipe.isFavorite = req.body.isFavorite;
 
     await recipe.save();
@@ -121,7 +127,50 @@ async function deleteRecipe(req, res) {
   }
 }
 
+
+async function getFavoriteRecipes(req, res) {
+  try {
+    const owned = await Recipe.find({ owner: req.user._id, isFavorite: true });
+    const shares = await RecipeShare.find({ user: req.user._id, isFavorite: true }).populate("recipe");
+    const shared = shares.filter((share) => share.recipe).map((share) => ({
+      ...share.recipe.toObject(), isShared: true, isFavorite: true,
+    }));
+    return res.json({ recipes: [...owned, ...shared] });
+  } catch (error) {
+    console.error("Get favorites error:", error);
+    return res.status(500).json({ message: "Could not retrieve favorite recipes." });
+  }
+}
+
+async function updateFavorite(req, res) {
+  if (typeof req.body.isFavorite !== "boolean") {
+    return res.status(400).json({ message: "isFavorite must be true or false." });
+  }
+  try {
+    const shared = req.recipeRole !== "executive-chef";
+    if (shared) {
+      const share = await RecipeShare.findOneAndUpdate(
+        { _id: req.recipeShare._id, user: req.user._id, recipe: req.recipe._id },
+        { $set: { isFavorite: req.body.isFavorite } },
+        { new: true, runValidators: true },
+      );
+      if (!share) return res.status(403).json({ message: "You no longer have access to this recipe." });
+    } else {
+      req.recipe.isFavorite = req.body.isFavorite;
+      await req.recipe.save();
+    }
+    return res.json({ recipe: {
+      ...req.recipe.toObject(), isShared: shared, isFavorite: req.body.isFavorite,
+    } });
+  } catch (error) {
+    console.error("Update favorite error:", error);
+    return res.status(400).json({ message: "Could not update favorite." });
+  }
+}
+
 module.exports = {
+  getFavoriteRecipes,
+  updateFavorite,
   getAllRecipes,
   createRecipe,
   getOneRecipe,

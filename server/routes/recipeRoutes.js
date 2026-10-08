@@ -7,6 +7,9 @@ const verifyRecipeEditor = require("../middleware/verifyRecipeEditor");
 
 router.use(verifyAuthentication);
 
+router.get("/favorites", recipeControllers.getFavoriteRecipes);
+router.patch("/:recipeId/favorite", verifyRecipeAccess, recipeControllers.updateFavorite);
+
 router.get("/", recipeControllers.getAllRecipes);
 router.post("/", recipeControllers.createRecipe);
 router.get("/:recipeId", verifyRecipeAccess, recipeControllers.getOneRecipe);

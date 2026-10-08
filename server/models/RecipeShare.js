@@ -12,6 +12,7 @@ const recipeShareSchema = mongoose.Schema(
       ref: "User",
       required: true,
     },
+    isFavorite: { type: Boolean, default: false },
     role: {
       type: String,
       enum: ["chef", "sous-chef", "co-executive-chef"],

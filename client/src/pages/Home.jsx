@@ -5,6 +5,7 @@ import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
 import { mealDbApi } from "../services/mealDbApi";
 import { Link } from "react-router-dom";
+import ActionError from "../components/ActionError";
 
 function shuffleMeals(meals, seed) {
   const shuffled = [...meals];
@@ -30,6 +31,7 @@ function Home() {
     data: recipeData,
     isLoading: recipesLoading,
     error: recipesError,
+    refetch: refetchFavorites,
   } = useFetch(`${API_URL}/api/recipe/favorites`, token);
 
   const recipeList = recipeData?.recipes || recipeData || [];
@@ -190,9 +192,12 @@ function Home() {
           )}
 
           {recipesError && (
-            <p className="text-red-500">
-              Could not load your favorite recipes.
-            </p>
+            <div>
+              <ActionError message={`Could not load your favorite recipes: ${recipesError.message}`} />
+              <button type="button" className="btn btn-secondary" onClick={refetchFavorites}>
+                Retry favorites
+              </button>
+            </div>
           )}
 
           {!recipesLoading && !recipesError && favoriteRecipes.length === 0 && (

@@ -295,7 +295,7 @@ function MealPlan() {
                             {selectedRecipe.name}
                           </p>
 
-                          <div className="mt-2 flex gap-3">
+                          <div className="mt-2 flex flex-wrap gap-1.5">
                             <button
                               type="button"
                               onClick={() =>
@@ -304,7 +304,7 @@ function MealPlan() {
                                   mealType: mealType.value,
                                 })
                               }
-                              className="btn btn-secondary btn-sm"
+                              className="btn btn-secondary btn-compact"
                             >
                               Change
                             </button>
@@ -314,7 +314,7 @@ function MealPlan() {
                               onClick={() =>
                                 handleRemoveMeal(day, mealType.value)
                               }
-                              className="btn btn-danger btn-sm"
+                              className="btn btn-danger btn-compact"
                             >
                               Remove
                             </button>

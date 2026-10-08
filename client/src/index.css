@@ -342,6 +342,13 @@
   font-size: 0.875rem;
 }
 
+.btn-compact {
+  min-height: 32px;
+  padding: 0.375rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+}
+
 .btn-icon {
   width: 44px;
   padding: 0;

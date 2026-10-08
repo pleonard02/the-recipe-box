@@ -15,6 +15,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(cors());
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "Welcome to The Recipe Box API!",
+    status: "running",
+  });
+});
+
 const userRouter = require("./routes/userRoutes.js");
 app.use("/api/users", userRouter);
 

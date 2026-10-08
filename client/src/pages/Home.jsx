@@ -1,11 +1,24 @@
+import { useState } from "react";
 import recipeBoxLogo from "../assets/recipe-box-logo.png";
 import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
 import { mealDbApi } from "../services/mealDbApi";
 import { Link } from "react-router-dom";
 
+function shuffleMeals(meals, seed) {
+  const shuffled = [...meals];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = (seed * 17 + i * 13) % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled.slice(0, 3);
+}
+
 function Home() {
   const { user, token } = useAuth();
+  const [shuffleCount, setShuffleCount] = useState(0);
 
   const { data: kitchenData, isLoading: kitchenLoading } = useFetch(
     "http://localhost:3000/api/kitchen-item",
@@ -26,41 +39,50 @@ function Home() {
 
   const kitchenItems = kitchenData?.kitchenItems || kitchenData || [];
 
-  const proteinKeywords = [
-    "chicken",
-    "beef",
-    "steak",
-    "ground beef",
-    "turkey",
-    "pork",
-    "ham",
-    "lamb",
-    "salmon",
-    "tuna",
-    "shrimp",
-    "fish",
-    "tofu",
+  const proteinMappings = [
+    { keyword: "chicken", ingredient: "chicken" },
+    { keyword: "flank steak", ingredient: "beef" },
+    { keyword: "ground beef", ingredient: "beef" },
+    { keyword: "steak", ingredient: "beef" },
+    { keyword: "beef", ingredient: "beef" },
+    { keyword: "lamb", ingredient: "lamb" },
+    { keyword: "pork tenderloin", ingredient: "pork" },
+    { keyword: "pork", ingredient: "pork" },
+    { keyword: "salmon", ingredient: "salmon" },
+    { keyword: "tuna", ingredient: "tuna" },
+    { keyword: "shrimp", ingredient: "shrimp" },
+    { keyword: "turkey", ingredient: "turkey" },
   ];
 
-  const proteinItem = Array.isArray(kitchenItems)
-    ? kitchenItems.find((item) =>
-        proteinKeywords.some((protein) =>
-          item.name?.toLowerCase().includes(protein),
-        ),
-      )
-    : null;
+  const availableProteins = [
+    ...new Set(
+      (Array.isArray(kitchenItems) ? kitchenItems : [])
+        .map(
+          (item) =>
+            proteinMappings.find(({ keyword }) =>
+              item.name?.toLowerCase().includes(keyword),
+            )?.ingredient,
+        )
+        .filter(Boolean),
+    ),
+  ];
 
-  const protein = proteinItem
-    ? proteinKeywords.find((protein) =>
-        proteinItem.name.toLowerCase().includes(protein),
-      )
-    : "";
+  const protein =
+    availableProteins.length > 0
+      ? availableProteins[shuffleCount % availableProteins.length]
+      : "";
 
   const {
     data: mealData,
     isLoading: mealsLoading,
     error: mealsError,
   } = useFetch(protein ? mealDbApi.searchByIngredient(protein) : null);
+
+  function handleShuffle() {
+    setShuffleCount((count) => count + 1);
+  }
+
+  const recommendedMeals = shuffleMeals(mealData?.meals || [], shuffleCount);
 
   return (
     <main className="main">
@@ -85,6 +107,14 @@ function Home() {
           </p>
         )}
 
+        <button
+          type="button"
+          onClick={handleShuffle}
+          className="mb-5 rounded-xl bg-[#0d5686] px-5 py-2.5 font-semibold text-[#fff3a6]"
+        >
+          Shuffle Recipes
+        </button>
+
         {protein && mealData?.meals && (
           <section className="mt-10">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#1677b8]">
@@ -100,7 +130,7 @@ function Home() {
             </p>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {mealData.meals.slice(0, 3).map((meal) => (
+              {recommendedMeals.map((meal) => (
                 <Link
                   key={meal.idMeal}
                   to={`/discover/${meal.idMeal}`}

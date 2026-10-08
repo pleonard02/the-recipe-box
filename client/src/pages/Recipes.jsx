@@ -32,7 +32,9 @@ function Recipes() {
 
   const sharedRecipes = (sharedData?.sharedRecipes || []).filter((share) => share.recipe);
 
-  const recipes = data?.recipes || [];
+  const recipes = (data?.recipes || []).filter(
+    (recipe) => recipe.source !== "mealdb" || recipe.isFavorite === true,
+  );
   const activeMealDbSearch = mealDbSearch || searchTerm.trim();
 
   let mealDbUrl = mealDbApi.searchByName(activeMealDbSearch);

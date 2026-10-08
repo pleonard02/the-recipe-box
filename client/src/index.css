@@ -412,3 +412,7 @@
 .recipe-form fieldset {
   padding: 16px;
 }
+
+.suggestion-text {
+  color: #6b3294;
+}

@@ -28,11 +28,9 @@ const recipeSuggestionSchema = mongoose.Schema({
     },
     originalValue: {
         type: mongoose.Schema.Types.Mixed,
-        required: true,
     },
     suggestedValue: {
         type: mongoose.Schema.Types.Mixed,
-        required: true,
     },
     note: {
         type: String,

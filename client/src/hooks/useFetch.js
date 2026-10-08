@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-function useFetch(url, token) {
+function useFetch(url, token, externalRefreshKey = 0) {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(() => Boolean(url));
   const [error, setError] = useState(null);
@@ -65,7 +65,7 @@ function useFetch(url, token) {
     return () => {
       controller.abort();
     };
-  }, [url, token, refreshKey]);
+  }, [url, token, refreshKey, externalRefreshKey]);
 
   return {
     data,

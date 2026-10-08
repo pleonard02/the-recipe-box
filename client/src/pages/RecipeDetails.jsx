@@ -4,6 +4,7 @@ import useFetch from "../hooks/useFetch";
 import { useState } from "react";
 import { API_URL } from "../config/api";
 import InvitedChefs from "../components/InvitedChefs";
+import RecipeSuggestions from "../components/RecipeSuggestions";
 import RecipeNotes from "../components/RecipeNotes";
 
 function RecipeDetails() {
@@ -274,6 +275,7 @@ function RecipeDetails() {
           />
         </section>
       )}
+      {user && <RecipeSuggestions key={recipeId} recipe={recipe} token={token} isOwner={isExecutiveChef} onApproved={refetch} />}
       <RecipeNotes recipeId={recipeId} token={token} />
     </main>
   );

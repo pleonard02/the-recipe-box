@@ -12,19 +12,13 @@ function InvitedChefs({ recipeId, token, refreshKey = 0 }) {
   const { data, isLoading, error, refetch } = useFetch(
     `${API_URL}/api/recipe/${recipeId}/shares`,
     token,
+    refreshKey,
   );
 
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
 
-  const shares = data?.shares || [];
-
-  const [lastRefreshKey, setLastRefreshKey] = useState(refreshKey);
-
-  if (refreshKey !== lastRefreshKey) {
-    setLastRefreshKey(refreshKey);
-    refetch();
-  }
+  const shares = data?.recipeShares || [];
 
   async function handleRoleChange(shareId, role) {
     setBusyId(shareId);

@@ -1,3 +1,4 @@
+const Recipe = require("../models/Recipe");
 const RecipeSuggestion = require("../models/RecipeSuggestion");
 
 async function getRecipeSuggestions(req, res) {
@@ -22,10 +23,10 @@ async function createRecipeSuggestion(req, res) {
   try {
     const { field, suggestedValue, note } = req.body;
 
-    if (req.recipeRole === "chef") {
+    if (!["chef", "sous-chef", "co-executive-chef"].includes(req.recipeRole)) {
       return res
         .status(403)
-        .json({ message: "Chefs cannot suggest changes to this recipe." });
+        .json({ message: "Only invited collaborators can suggest changes to this recipe." });
     }
 
     if (!field || suggestedValue === undefined) {
@@ -52,6 +53,26 @@ async function createRecipeSuggestion(req, res) {
       });
     }
 
+    if (!["ingredients", "prepTime", "cookTime", "servings"].includes(field) &&
+        (typeof suggestedValue !== "string" || (["name", "instructions"].includes(field) && !suggestedValue.trim()))) {
+      return res.status(400).json({ message: "Enter valid text for this recipe field." });
+    }
+    const candidate = new Recipe(req.recipe.toObject());
+    candidate.set(field, suggestedValue);
+    try {
+      await candidate.validate([field]);
+    } catch (validationError) {
+      return res.status(400).json({ message: validationError.message });
+    }
+    if (["prepTime", "cookTime", "servings"].includes(field)) {
+      const values = candidate[field];
+      if (!values.length || values.some((value) => !Number.isFinite(value) || value < (field === "servings" ? 1 : 0))) {
+        return res.status(400).json({ message: "Enter a valid nonnegative time or at least one serving." });
+      }
+    }
+    if (field === "ingredients" && (!Array.isArray(suggestedValue) || !suggestedValue.length || suggestedValue.some((item) => !item || typeof item.name !== "string" || !item.name.trim() || (item.quantity != null && (!Number.isFinite(Number(item.quantity)) || Number(item.quantity) < 0))))) {
+      return res.status(400).json({ message: "Each ingredient needs a name and a valid nonnegative quantity." });
+    }
     const originalValue = req.recipe[field];
 
     const suggestion = await RecipeSuggestion.create({
@@ -59,7 +80,7 @@ async function createRecipeSuggestion(req, res) {
       author: req.user._id,
       field,
       originalValue,
-      suggestedValue,
+      suggestedValue: candidate.get(field),
       note: note || "",
     });
 
@@ -110,6 +131,9 @@ async function reviewRecipeSuggestion(req, res) {
     }
 
     if (status === "approved") {
+      if (JSON.stringify(req.recipe[suggestion.field]) !== JSON.stringify(suggestion.originalValue)) {
+        return res.status(409).json({ message: "This field changed since the suggestion was submitted. Reject it and ask for an updated suggestion." });
+      }
       req.recipe[suggestion.field] = suggestion.suggestedValue;
 
       await req.recipe.save();
@@ -125,7 +149,7 @@ async function reviewRecipeSuggestion(req, res) {
       message:
         status === "approved"
           ? "Suggestion approved and recipe updated."
-          : "Suggested rejection",
+          : "Suggestion rejected.",
       suggestion,
       recipe: req.recipe,
     });

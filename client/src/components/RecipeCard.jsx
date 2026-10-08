@@ -14,7 +14,7 @@ function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
       )}
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#1677b8]">
-          {recipe.isPublic ? "Public Recipe" : "My Recipe"}
+          {recipe.isShared ? "Shared Recipe" : recipe.isPublic ? "Public Recipe" : "My Recipe"}
         </p>
 
         <button

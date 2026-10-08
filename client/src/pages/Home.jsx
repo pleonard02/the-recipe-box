@@ -30,7 +30,7 @@ function Home() {
     data: recipeData,
     isLoading: recipesLoading,
     error: recipesError,
-  } = useFetch(`${API_URL}/api/recipe`, token);
+  } = useFetch(`${API_URL}/api/recipe/favorites`, token);
 
   const recipeList = recipeData?.recipes || recipeData || [];
 

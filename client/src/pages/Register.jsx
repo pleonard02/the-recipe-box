@@ -13,6 +13,7 @@ function Register() {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
   const navigate = useNavigate();
 
@@ -143,11 +144,22 @@ function Register() {
                 type="password"
                 placeholder="Create a password"
                 autoComplete="new-password"
+                onFocus={() => setShowPasswordRequirements(true)}
+                aria-describedby={showPasswordRequirements ? "password-requirements" : undefined}
                 value={formData.password}
                 onChange={handleChange}
                 required
                 minLength={8}
               />
+              {showPasswordRequirements && (
+                <p
+                  id="password-requirements"
+                  className="mt-2 text-sm text-[#536168]"
+                >
+                  Use at least 8 characters, including an uppercase letter, a
+                  lowercase letter, a number, and a symbol (such as !, @, or #).
+                </p>
+              )}
             </div>
             <div className="registration-field">
               <label htmlFor="confirmPassword">Confirm password</label>

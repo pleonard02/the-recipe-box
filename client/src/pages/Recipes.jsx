@@ -1,3 +1,5 @@
+import { updateRecipeFavorite } from "../services/recipeFavorites";
+import ActionError from "../components/ActionError";
 import { useState } from "react";
 import { useAuth } from "../context/useAuth";
 import RecipeForm from "../components/RecipeForm";
@@ -9,6 +11,7 @@ import { mealDbApi } from "../services/mealDbApi";
 
 function Recipes() {
   const { token } = useAuth();
+  const [actionError, setActionError] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -55,6 +58,7 @@ function Recipes() {
   const discoverRecipes = mealDbData?.meals || [];
 
   async function handleDelete(recipeId) {
+    setActionError("");
     try {
       const response = await fetch(`${API_URL}/api/recipe/${recipeId}`, {
         method: "DELETE",
@@ -70,7 +74,7 @@ function Recipes() {
 
       refetch();
     } catch (deleteError) {
-      console.error("Delete recipe error:", deleteError);
+      setActionError(deleteError.message || "Could not delete recipe. Please try again.");
     }
   }
 
@@ -88,27 +92,13 @@ function Recipes() {
   }
 
   async function handleFavorite(recipe) {
+    setActionError("");
     try {
-      const response = await fetch(`${API_URL}/api/recipe/${recipe._id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          isFavorite: !recipe.isFavorite,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Could not update favorite.");
-      }
+      await updateRecipeFavorite(recipe, token);
 
       refetch();
     } catch (error) {
-      console.error("Favorite recipe error:", error);
+      setActionError(error.message || "Could not update favorite. Please try again.");
     }
   }
 
@@ -123,6 +113,7 @@ function Recipes() {
   return (
     <main className="main min-h-screen bg-[#fffefa] px-8 py-10">
       <section className="mx-auto max-w-7xl">
+        <ActionError message={actionError} />
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#1677b8]">

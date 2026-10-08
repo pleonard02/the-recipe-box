@@ -1,3 +1,6 @@
+import { updateRecipeFavorite } from "../services/recipeFavorites";
+import { useState } from "react";
+import ActionError from "../components/ActionError";
 import { API_URL } from "../config/api";
 import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
@@ -5,9 +8,10 @@ import RecipeCard from "../components/RecipeCard";
 
 function FavoriteRecipes() {
   const { token } = useAuth();
+  const [actionError, setActionError] = useState("");
 
   const { data, isLoading, error, refetch } = useFetch(
-    `${API_URL}/api/recipe`,
+    `${API_URL}/api/recipe/favorites`,
     token,
   );
 
@@ -26,35 +30,19 @@ function FavoriteRecipes() {
   }
 
   async function handleFavorite(recipe) {
+    setActionError("");
     try {
-        const response = await fetch(
-            `${API_URL}/api/recipe/${recipe._id}`,
-            {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    isFavorite: !recipe.isFavorite,
-                }),
-            },
-        );
+        await updateRecipeFavorite(recipe, token);
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || "Could not update favorite.");
-        }
-
-        refetch();
+      refetch();
     } catch (error) {
-        console.error("Favorite recipe error:", error);
+        setActionError(error.message || "Could not update favorite. Please try again.");
     }
   }
 
   return (
     <main className="main min-h-screen bg-[#fffefa] px-8 py-10">
+      <ActionError message={actionError} />
       <h1 className="text-4xl font-semibold text-[#0d5686]">
         Favorite Recipes
       </h1>

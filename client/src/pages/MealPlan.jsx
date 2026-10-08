@@ -1,3 +1,4 @@
+import ActionError from "../components/ActionError";
 import { API_URL } from "../config/api";
 import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
@@ -5,6 +6,7 @@ import { useState } from "react";
 
 function MealPlan() {
   const { token } = useAuth();
+  const [actionError, setActionError] = useState("");
   const [selectedMeals, setSelectedMeals] = useState(null);
   const [weekOffset, setWeekOffset] = useState(0);
   const [editingMeal, setEditingMeal] = useState(null);
@@ -139,6 +141,7 @@ function MealPlan() {
   }
 
   async function handleSaveMealPlan() {
+    setActionError("");
     try {
       const weekOf = new Date(currentWeekStart);
       weekOf.setHours(0, 0, 0, 0);
@@ -181,7 +184,7 @@ function MealPlan() {
 
       console.log("Meal plan saved:", result);
     } catch (error) {
-      console.error("Save meal plan error:", error);
+      setActionError(error.message || "Could not save meal plan. Please try again.");
     }
   }
 
@@ -190,6 +193,7 @@ function MealPlan() {
 
   return (
     <main className="main min-h-screen bg-[#fffefa] px-8 py-10">
+      <ActionError message={actionError} />
       <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#1677b8]">
         THE RECIPE BOX
       </p>

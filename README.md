@@ -46,7 +46,7 @@ Screenshots will highlight the home dashboard, recipe collection, meal planner, 
 | Recipe collection | Create, edit, and delete recipes with ingredients, instructions, preparation time, cooking time, and servings. |
 | Recipe photos | Upload JPG, PNG, or WebP images up to 5 MB; store and display photos through Cloudinary. |
 | Recipe discovery | Search TheMealDB by recipe name or browse by category or cuisine; save discovered recipes to favorites. |
-| Favorites | Keep favorite recipes together and access them from the home dashboard. |
+| Favorites | Keep favorite recipes together and access them from the home dashboard. Unfavoriting an imported discovery recipe removes it from the saved collection; recipes you create remain saved. Shared favorites are personal to each invited user and disappear if access is revoked. |
 | Meal planning | Assign recipes to breakfast, lunch, dinner, or snack slots; navigate weeks and choose a Sunday or Monday week start. |
 | Shopping lists | Create weekly lists, manage quantities and units, and track items as planned, in cart, or purchased. |
 | Weekly Buys | Maintain recurring purchases that populate newly created shopping lists. |

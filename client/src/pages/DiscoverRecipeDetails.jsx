@@ -1,3 +1,4 @@
+import { updateRecipeFavorite } from "../services/recipeFavorites";
 import { useParams } from "react-router-dom";
 import useFetch from "../hooks/useFetch";
 import { mealDbApi } from "../services/mealDbApi";
@@ -15,7 +16,7 @@ function DiscoverRecipeDetails() {
 
   const { data, isLoading, error } = useFetch(mealDbApi.getById(mealId));
 
-  const { data: savedRecipeData, refetch: refetchSavedRecipes } = useFetch(
+  const { data: savedRecipeData, isLoading: savedRecipesLoading, refetch: refetchSavedRecipes } = useFetch(
     `${API_URL}/api/recipe`,
     token,
   );
@@ -71,7 +72,7 @@ function DiscoverRecipeDetails() {
   }
 
   async function handleFavorite() {
-    if (isFavoriteUpdating) {
+    if (isFavoriteUpdating || savedRecipesLoading) {
       return;
     }
 
@@ -80,23 +81,9 @@ function DiscoverRecipeDetails() {
     try {
       setFavoriteError("");
 
-      if (activeSavedRecipe) {
-        const response = await fetch(
-          `${API_URL}/api/recipe/${activeSavedRecipe._id}`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ isFavorite: !activeSavedRecipe.isFavorite }),
-          },
-        );
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result.message || "Could not update favorite.");
-        }
-        setSavedFavorite(result.recipe);
+      if (activeSavedRecipe?._id) {
+        const updatedRecipe = await updateRecipeFavorite(activeSavedRecipe, token);
+        setSavedFavorite(updatedRecipe || { externalId: mealId, isFavorite: false });
         refetchSavedRecipes();
         return;
       }
@@ -164,7 +151,7 @@ function DiscoverRecipeDetails() {
               <button
                 type="button"
                 onClick={handleFavorite}
-                disabled={isFavoriteUpdating}
+                disabled={isFavoriteUpdating || savedRecipesLoading}
                 aria-busy={isFavoriteUpdating}
                 aria-label={
                   activeSavedRecipe?.isFavorite

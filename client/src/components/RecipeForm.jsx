@@ -145,10 +145,10 @@ function RecipeForm({ onClose, token, onRecipeCreated, editingRecipe }) {
         image: imageUrl,
         prepTime: Number(recipe.prepTime),
         cookTime: Number(recipe.cookTime),
-        servings: Number(recipe.servings),
+        servings: recipe.servings === "" ? null : Number(recipe.servings),
         ingredients: recipe.ingredients.filter((ingredient) => ingredient.name?.trim()).map((ingredient) => ({
           ...ingredient,
-          quantity: Number(ingredient.quantity),
+          quantity: ingredient.quantity === "" || ingredient.quantity == null ? null : Number(ingredient.quantity),
         })),
       };
 

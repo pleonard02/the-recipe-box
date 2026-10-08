@@ -1,3 +1,4 @@
+import ActionError from "../components/ActionError";
 import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
 import { useState } from "react";
@@ -152,6 +153,7 @@ function ShoppingList() {
   }
 
   async function handleStatusChange(listId, itemId, status) {
+    setActionError("");
     try {
       const response = await fetch(
         `${API_URL}/api/shopping-list/${listId}/items/${itemId}`,
@@ -173,7 +175,7 @@ function ShoppingList() {
 
       refetch();
     } catch (error) {
-      console.error("Update shopping item error:", error);
+      setActionError(error.message || "Could not update item. Please try again.");
     }
   }
 
@@ -232,6 +234,7 @@ function ShoppingList() {
   }
 
   async function handleDeleteItem(listId, itemId) {
+    setActionError("");
     try {
       const response = await fetch(
         `${API_URL}/api/shopping-list/${listId}/items/${itemId}`,
@@ -251,7 +254,7 @@ function ShoppingList() {
 
       refetch();
     } catch (error) {
-      console.error("Delete shopping item error:", error);
+      setActionError(error.message || "Could not delete item. Please try again.");
     }
   }
 
@@ -291,6 +294,7 @@ function ShoppingList() {
   }
 
   async function handleRemoveWeeklyBuy(buyId) {
+    setActionError("");
     try {
       const response = await fetch(
         `${API_URL}/api/shopping-list/weekly-buys/${buyId}`,
@@ -325,11 +329,7 @@ function ShoppingList() {
           {notice}
         </p>
       )}
-      {actionError && (
-        <p role="alert" className="mt-4 text-red-600">
-          {actionError}
-        </p>
-      )}
+      <ActionError message={actionError} />
       <section className="mt-6 rounded-xl bg-white p-5 shadow-sm">
         <h2 className="text-xl font-semibold text-[#0d5686]">Weekly Buys</h2>
         <p className="text-sm text-[#5f6b70]">

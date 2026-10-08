@@ -1,4 +1,6 @@
-import { useParams } from "react-router-dom";
+import { updateRecipeFavorite } from "../services/recipeFavorites";
+import ActionError from "../components/ActionError";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
 import { useState } from "react";
@@ -9,7 +11,9 @@ import RecipeNotes from "../components/RecipeNotes";
 
 function RecipeDetails() {
   const { recipeId } = useParams();
+  const navigate = useNavigate();
   const { token, user } = useAuth();
+  const [actionError, setActionError] = useState("");
   const [shareEmail, setShareEmail] = useState("");
   const [shareRole, setShareRole] = useState("chef");
   const [shareMessage, setShareMessage] = useState("");
@@ -41,27 +45,17 @@ function RecipeDetails() {
   );
 
   async function handleFavorite() {
+    setActionError("");
     try {
-      const response = await fetch(`${API_URL}/api/recipe/${recipe._id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          isFavorite: !recipe.isFavorite,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Could not update favorite.");
+      const updatedRecipe = await updateRecipeFavorite(recipe, token);
+      if (!updatedRecipe) {
+        navigate("/recipes", { replace: true });
+        return;
       }
 
       refetch();
     } catch (error) {
-      console.error("Favorite recipe error:", error);
+      setActionError(error.message || "Could not update favorite. Please try again.");
     }
   }
 
@@ -109,6 +103,7 @@ function RecipeDetails() {
             The Recipe Box
           </p>
 
+          <ActionError message={actionError} />
           <button
             type="button"
             onClick={handleFavorite}

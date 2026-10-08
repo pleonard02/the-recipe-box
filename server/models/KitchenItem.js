@@ -14,6 +14,7 @@ const kitchenItemSchema = mongoose.Schema({
     quantity: {
         type: Number,
         required: true,
+        validate: { validator: (value) => Number.isFinite(value) && value > 0, message: "Quantity must be a positive finite number." },
     },
     unit: {
         type: String,

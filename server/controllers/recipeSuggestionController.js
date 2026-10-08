@@ -65,8 +65,8 @@ async function createRecipeSuggestion(req, res) {
       return res.status(400).json({ message: validationError.message });
     }
     if (["prepTime", "cookTime", "servings"].includes(field)) {
-      const values = candidate[field];
-      if (!values.length || values.some((value) => !Number.isFinite(value) || value < (field === "servings" ? 1 : 0))) {
+      const value = candidate[field];
+      if (!Number.isFinite(value) || value < (field === "servings" ? 1 : 0)) {
         return res.status(400).json({ message: "Enter a valid nonnegative time or at least one serving." });
       }
     }
@@ -131,7 +131,10 @@ async function reviewRecipeSuggestion(req, res) {
     }
 
     if (status === "approved") {
-      if (JSON.stringify(req.recipe[suggestion.field]) !== JSON.stringify(suggestion.originalValue)) {
+      const originalValue = ["prepTime", "cookTime", "servings"].includes(suggestion.field)
+        ? require("../utils/recipeNumber")(suggestion.originalValue)
+        : suggestion.originalValue;
+      if (JSON.stringify(req.recipe[suggestion.field]) !== JSON.stringify(originalValue)) {
         return res.status(409).json({ message: "This field changed since the suggestion was submitted. Reject it and ask for an updated suggestion." });
       }
       req.recipe[suggestion.field] = suggestion.suggestedValue;

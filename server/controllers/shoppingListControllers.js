@@ -84,6 +84,10 @@ async function addShoppingListItem(req, res) {
         });
     }
 
+    if (typeof makeWeeklyBuy !== "boolean") {
+      return res.status(400).json({ message: "makeWeeklyBuy must be a boolean." });
+    }
+
     let weeklyBuy = null;
     if (makeWeeklyBuy === true) {
       weeklyBuy = await WeeklyBuy.create({
@@ -172,6 +176,8 @@ async function updateShoppingListItem(req, res) {
       item.unit = req.body.unit.trim();
     }
     if (req.body.status !== undefined) item.status = req.body.status;
+
+    await item.validate();
 
     if (req.body.makeWeeklyBuy !== undefined) {
       if (typeof req.body.makeWeeklyBuy !== "boolean")
@@ -296,8 +302,16 @@ async function updateShoppingList(req, res) {
         .json({ message: "You cannot update this shopping list." });
     }
 
-    if (req.body.weekOf !== undefined) shoppingList.weekOf = req.body.weekOf;
-    if (req.body.items !== undefined) shoppingList.items = req.body.items;
+    if (req.body.items !== undefined) {
+      return res.status(400).json({ message: "Use the shopping-list item routes to add, edit, or remove items." });
+    }
+    if (req.body.weekOf !== undefined) {
+      const week = new Date(req.body.weekOf);
+      if (!req.body.weekOf || Number.isNaN(week.getTime())) {
+        return res.status(400).json({ message: "A valid weekOf is required." });
+      }
+      shoppingList.weekOf = week;
+    }
 
     await shoppingList.save();
     res

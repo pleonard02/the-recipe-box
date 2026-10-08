@@ -22,11 +22,15 @@ async function getUser(req, res) {
 
 async function registerUser(req, res) {
     try {
+        const { username, email, password } = req.body;
+        if (typeof username !== "string" || !username.trim() || typeof email !== "string" || !email.trim() || typeof password !== "string") {
+            return res.status(400).json({ message: "Enter a username, email, and password." });
+        }
         const foundUser = await User.findOne({ email: req.body.email });
 
         if(foundUser !== null) return res.status(400).json({ message: "This user already exists." });
 
-        const newUser = await User.create(req.body);
+        const newUser = await User.create({ username, email: email.trim(), password });
 
         const payload = { _id: newUser._id };
 
@@ -41,6 +45,9 @@ async function registerUser(req, res) {
 
 async function loginUser(req, res) {
     try {
+        if (typeof req.body.email !== "string" || !req.body.email.trim() || typeof req.body.password !== "string" || !req.body.password) {
+            return res.status(400).json({ message: "Enter an email and password." });
+        }
         const user = await User.findOne({ email: req.body.email });
 
         if (!user) {

@@ -56,10 +56,14 @@ async function createRecipe(req, res) {
 
 async function getOneRecipe(req, res) {
   try {
+    if (!req.recipe) {
+      return res.status(404).json({ message: "Recipe not found or recipe access was not loaded." });
+    }
+
     return res.status(200).json(req.recipe);
   } catch (error) {
-    console.error(error);
-    return res.status(400).json({ message: error.message });
+    console.error("Get one recipe error:", error);
+    return res.status(400).json({ message: "Could not retrieve recipe." });
   }
 }
 

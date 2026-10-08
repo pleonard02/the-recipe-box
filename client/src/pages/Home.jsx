@@ -179,26 +179,39 @@ function Home() {
           {favoriteRecipes.length > 0 && (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {favoriteRecipes.slice(0, 3).map((recipe) => (
-                <div
+                <Link
                   key={recipe._id}
-                  className="rounded-2xl bg-white p-5 shadow-sm"
+                  to={`/recipes/${recipe._id}`}
+                  className="group block overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
                 >
-                  <h3 className="text-lg font-semibold text-[#0d5686]">
-                    {recipe.title}
-                  </h3>
-
-                  {recipe.category && (
-                    <p className="mt-1 text-sm text-[#7c858b]">
-                      {recipe.category}
-                    </p>
+                  {recipe.image ? (
+                    <img
+                      src={recipe.image}
+                      alt={recipe.name}
+                      className="h-48 w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-48 items-center justify-center bg-[#edf6fa] text-[#1677b8]">
+                      No recipe image
+                    </div>
                   )}
 
-                  <div className="mt-4">
-                    <span className="rounded-full bg-[#fff7c7] px-3 py-1 text-xs font-semibold text-[#0d5686]">
-                      ♥ Favorite
-                    </span>
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold text-[#0d5686] group-hover:text-[#1677b8]">
+                      {recipe.name}
+                    </h3>
+
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-[#69767b]">
+                      {recipe.description || "No description added yet."}
+                    </p>
+
+                    <div className="mt-4">
+                      <span className="rounded-full bg-[#fff7c7] px-3 py-1 text-xs font-semibold text-[#0d5686]">
+                        ♥ Favorite
+                      </span>
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}

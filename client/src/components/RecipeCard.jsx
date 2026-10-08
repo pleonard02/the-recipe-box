@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
   console.log(recipe.name, recipe.isFavorite);
   return (
-    <article className="flex min-h-[250px] flex-col rounded-2xl border border-[#dbe3e6] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+    <article className="relative flex min-h-[250px] flex-col rounded-2xl border border-[#dbe3e6] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#1677b8]">
           {recipe.isPublic ? "Public Recipe" : "My Recipe"}
@@ -31,7 +31,7 @@ function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
       <h3 className="mt-2 text-xl font-semibold text-[#0d5686]">
         <Link
           to={`/recipes/${recipe._id}`}
-          className="transition hover:text-[#1677b8] hover:underline"
+          className="after:absolute after:inset-0 transition hover:text-[#1677b8]"
         >
           {recipe.name}
         </Link>
@@ -61,23 +61,29 @@ function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
         )}
       </div>
 
-      <div className="mt-auto flex items-center gap-4 border-t border-[#edf2f4] pt-4">
-        <button
-          type="button"
-          onClick={() => onEdit(recipe)}
-          className="text-sm font-semibold text-[#1677b8] hover:underline"
-        >
-          Edit
-        </button>
+      {(onEdit || onDelete) && (
+        <div className="mt-auto flex items-center gap-4 border-t border-[#edf2f4] pt-4">
+          {onEdit && (
+            <button
+              type="button"
+              onClick={() => onEdit(recipe)}
+              className="text-sm font-semibold text-[#1677b8] hover:underline"
+            >
+              Edit
+            </button>
+          )}
 
-        <button
-          type="button"
-          onClick={() => onDelete(recipe._id)}
-          className="text-sm font-semibold text-[#9b3b32] hover:underline"
-        >
-          Delete
-        </button>
-      </div>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(recipe._id)}
+              className="text-sm font-semibold text-[#9b3b32] hover:underline"
+            >
+              Delete
+            </button>
+          )}
+        </div>
+      )}
     </article>
   );
 }

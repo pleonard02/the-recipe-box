@@ -1,17 +1,26 @@
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import useFetch from "../hooks/useFetch";
+import { useState } from "react";
+import { API_URL } from "../config/api";
+import InvitedChefs from "../components/InvitedChefs";
+import RecipeNotes from "../components/RecipeNotes";
 
 function RecipeDetails() {
   const { recipeId } = useParams();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const [shareEmail, setShareEmail] = useState("");
+  const [shareRole, setShareRole] = useState("chef");
+  const [shareMessage, setShareMessage] = useState("");
+  const [isSharing, setIsSharing] = useState(false);
+  const [sharesRefreshKey, setSharesRefreshKey] = useState(0);
 
   const {
     data: recipe,
     isLoading,
     error,
     refetch,
-  } = useFetch(`http://localhost:3000/api/recipe/${recipeId}`, token);
+  } = useFetch(`${API_URL}/api/recipe/${recipeId}`, token);
 
   if (isLoading) {
     return <p>Loading recipe...</p>;
@@ -21,21 +30,27 @@ function RecipeDetails() {
     return <p>{error.message}</p>;
   }
 
+  if (!recipe) {
+    return <p>Recipe not found.</p>;
+  }
+
+  const ownerId = recipe.owner?._id || recipe.owner;
+  const isExecutiveChef = Boolean(
+    user?._id && ownerId && String(user._id) === String(ownerId),
+  );
+
   async function handleFavorite() {
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/recipe/${recipe._id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            isFavorite: !recipe.isFavorite,
-          }),
+      const response = await fetch(`${API_URL}/api/recipe/${recipe._id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          isFavorite: !recipe.isFavorite,
+        }),
+      });
 
       const data = await response.json();
 
@@ -46,6 +61,42 @@ function RecipeDetails() {
       refetch();
     } catch (error) {
       console.error("Favorite recipe error:", error);
+    }
+  }
+
+  async function handleShareRecipe(event) {
+    event.preventDefault();
+
+    setIsSharing(true);
+    setShareMessage("");
+
+    try {
+      const response = await fetch(`${API_URL}/api/recipe/${recipeId}/shares`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email: shareEmail.trim(),
+          role: shareRole,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Could not share recipe.");
+      }
+
+      setShareEmail("");
+      setShareRole("chef");
+      setShareMessage("Chef successfully invited!");
+      setSharesRefreshKey((previous) => previous + 1);
+    } catch (error) {
+      setShareMessage(error.message);
+    } finally {
+      setIsSharing(false);
     }
   }
 
@@ -149,6 +200,76 @@ function RecipeDetails() {
           </section>
         </div>
       </article>
+
+      {isExecutiveChef && (
+        <section className="mx-auto mt-8 max-w-5xl rounded-2xl border border-[#dbe3e6] bg-white p-8 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#1677b8]">
+            COLLABORATIVE KITCHEN
+          </p>
+
+          <h2 className="mt-2 text-2xl font-semibold text-[#0d5686]">
+            Invite a Chef
+          </h2>
+
+          <p className="mt-2 text-[#69767b]">
+            Share this recipe with another registered Recipe Box user.
+          </p>
+
+          <form
+            onSubmit={handleShareRecipe}
+            className="mt-6 flex flex-col gap-4 md:flex-row md:items-end"
+          >
+            <label className="flex-1">
+              <span className="mb-2 block text-sm font-semibold text-[#0d5686]">
+                Chef's Email
+              </span>
+
+              <input
+                type="email"
+                required
+                value={shareEmail}
+                onChange={(event) => setShareEmail(event.target.value)}
+                placeholder="chef@example.com"
+                className="w-full rounded-xl border border-[#b9ccd5] px-4 py-3"
+              />
+            </label>
+
+            <label>
+              <span className="mb-2 block text-sm font-semibold text-[#0d5686]">
+                Kitchen Role
+              </span>
+
+              <select
+                value={shareRole}
+                onChange={(event) => setShareRole(event.target.value)}
+                className="w-full rounded-xl border border-[#b9ccd5] px-4 py-3"
+              >
+                <option value="chef">Chef</option>
+                <option value="sous-chef">Sous Chef</option>
+                <option value="co-executive-chef">Co-Executive Chef</option>
+              </select>
+            </label>
+
+            <button
+              type="submit"
+              disabled={isSharing}
+              className="rounded-xl bg-[#0d5686] px-6 py-3 font-semibold text-[#fff3a6] disabled:opacity-50"
+            >
+              {isSharing ? "Inviting..." : "Invite Chef"}
+            </button>
+          </form>
+
+          {shareMessage && (
+            <p className="mt-4 text-sm text-[#0d5686]">{shareMessage}</p>
+          )}
+          <InvitedChefs
+            recipeId={recipeId}
+            token={token}
+            refreshKey={sharesRefreshKey}
+          />
+        </section>
+      )}
+      <RecipeNotes recipeId={recipeId} token={token} />
     </main>
   );
 }

@@ -33,8 +33,17 @@ function useFetch(url, token) {
           throw new Error(`Request failed: ${response.status}`);
         }
 
-        const result = await response.json();
+        const responseText = await response.text();
+
+        if (!responseText) {
+          throw new Error(
+            `The server returned an empty response for ${url} (status ${response.status}).`,
+          );
+        }
+
+        const result = JSON.parse(responseText);
         setData(result);
+        
       } catch (caughtError) {
         if (
           caughtError instanceof DOMException &&

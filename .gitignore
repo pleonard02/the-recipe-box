@@ -23,3 +23,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+client/src/assets/the_recipe_box.mov

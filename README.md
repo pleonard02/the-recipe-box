@@ -6,36 +6,35 @@ The Recipe Box helps home cooks organize the week—from finding a recipe and pl
 
 ## Demo
 
-**Video walkthrough:** Coming soon.
-
-
+![The Recipe Box Video](/client/src/assets/the_recipe_box_demo.mov)
 
 ## Screenshots
 
 Screenshots will highlight the home dashboard, recipe collection, meal planner, shopping list, and kitchen inventory.
 
 
-
 ### Home dashboard
-![Home dashboard with kitchen overview and favorite recipes]()
+![Home dashboard with kitchen overview and favorite recipes](/client/src/assets/the_recipe_box_home.png)
 
 ### Recipe collection
-![Saved recipes and recipe discovery]()
+![Saved recipes](/client/src/assets/the_recipe_box_recipe.png)
+
+![Recipe discovery](/client/src/assets/the_recipe_box_discover.png)
 
 ### Recipe details
-![Recipe photo, ingredients, and cooking instructions]()
+![Recipe photo, ingredients, and cooking instructions](/client/src/assets/the_recipe_box_recipe_details.png)
 
 ### Weekly meal planner
-![Weekly meal planner organized by day and meal type]()
+![Weekly meal planner organized by day and meal type](/client/src/assets/the_recipe_box_mealplan.png)
 
 ### Shopping list
-![Shopping list with recurring purchases and item statuses]()
+![Shopping list with recurring purchases and item statuses](/client/src/assets/the_recipe_box_shopping_list.png)
 
 ### Kitchen inventory
-![Kitchen inventory with category filters and expiration dates]()
+![Kitchen inventory with category filters and expiration dates](/client/src/assets/the_recipe_box_my_kitchen.png)
 
 ### Shared recipe suggestions
-![Purple collaborator proposals beside original recipe text and owner approval controls]()
+![Purple collaborator proposals beside original recipe text and owner approval controls](/client/src/assets/the_recipe_box_edits.png)
 -->
 
 ## Features

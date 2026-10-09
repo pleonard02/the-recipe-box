@@ -43,6 +43,7 @@ function Home() {
   const kitchenItems = kitchenData?.kitchenItems || kitchenData || [];
 
   const proteinMappings = [
+    { keyword: "tofu", ingredient: "tofu" },
     { keyword: "chicken", ingredient: "chicken" },
     { keyword: "flank steak", ingredient: "beef" },
     { keyword: "ground beef", ingredient: "beef" },

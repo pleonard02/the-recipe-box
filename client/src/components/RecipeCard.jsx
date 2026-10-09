@@ -17,7 +17,7 @@ function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
           {recipe.isShared ? "Shared Recipe" : recipe.isPublic ? "Public Recipe" : "My Recipe"}
         </p>
 
-        <button
+        {onFavorite && <button
           type="button"
           onClick={() => {
             console.log("Heart clicked:", recipe);
@@ -34,7 +34,7 @@ function RecipeCard({ recipe, onEdit, onDelete, onFavorite }) {
           }
         >
           {recipe.isFavorite ? "♥" : "♡"}
-        </button>
+        </button>}
       </div>
 
       <h3 className="mt-2 text-xl font-semibold text-[#0d5686]">

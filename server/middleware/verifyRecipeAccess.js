@@ -31,6 +31,12 @@ async function verifyRecipeAccess(req, res, next) {
       user: req.user._id,
     });
 
+    if (!recipeShare && recipe.isPublic && req.method === "GET" && req.route?.path === "/:recipeId") {
+      req.recipe = recipe;
+      req.recipeRole = "public-viewer";
+      return next();
+    }
+
     if (!recipeShare) {
       return res.status(403).json({
         message: "You do not have access to this recipe.",

@@ -51,6 +51,16 @@ function Recipes() {
     error: mealDbError,
   } = useFetch(mealDbUrl);
 
+  const publicSearch = new URLSearchParams({
+    term: activeMealDbSearch,
+    category: selectedCategory,
+    cuisine: selectedCuisine,
+  });
+  const { data: publicData, isLoading: publicLoading, error: publicError, refetch: refetchPublic } = useFetch(
+    `${API_URL}/api/recipe/public?${publicSearch}`, token,
+  );
+  const publicRecipes = publicData?.recipes || [];
+
   const { data: categoryData } = useFetch(mealDbApi.getCategories());
   const { data: cuisineData } = useFetch(mealDbApi.getCuisines());
 
@@ -75,6 +85,7 @@ function Recipes() {
       }
 
       refetch();
+      refetchPublic();
     } catch (deleteError) {
       setActionError(deleteError.message || "Could not delete recipe. Please try again.");
     }
@@ -99,6 +110,7 @@ function Recipes() {
       await updateRecipeFavorite(recipe, token);
 
       refetch();
+      refetchPublic();
     } catch (error) {
       setActionError(error.message || "Could not update favorite. Please try again.");
     }
@@ -152,7 +164,7 @@ function Recipes() {
                 setShowAddForm(false);
                 setEditingRecipe(null);
               }}
-              onRecipeCreated={refetch}
+              onRecipeCreated={() => { refetch(); refetchPublic(); }}
               editingRecipe={editingRecipe}
             />
           </div>
@@ -363,6 +375,20 @@ function Recipes() {
             ))}
           </select>
         </div>
+
+        <section className="mb-8" aria-label="Public community recipes">
+          <h3 className="mb-4 text-xl font-semibold text-[#0d5686]">Public Recipes</h3>
+          {publicLoading ? <p>Loading public recipes…</p> : publicError ? (
+            <ActionError message="Could not load public recipes. Please try again." />
+          ) : publicRecipes.length === 0 ? <p>No public recipes match your search.</p> : (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {publicRecipes.map((recipe) => (
+                <RecipeCard key={recipe._id} recipe={recipe} />
+              ))}
+            </div>
+          )}
+        </section>
+        <h3 className="mb-4 text-xl font-semibold text-[#0d5686]">TheMealDB Recipes</h3>
 
         {mealDbLoading ? (
           <p className="text-[#69767b]">Loading recipes...</p>

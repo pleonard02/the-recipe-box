@@ -104,7 +104,7 @@ function RecipeDetails() {
           </p>
 
           <ActionError message={actionError} />
-          <button
+          {!recipe.isPublicViewer && <button
             type="button"
             onClick={handleFavorite}
             aria-label={
@@ -120,7 +120,7 @@ function RecipeDetails() {
             </span>
 
             {recipe.isFavorite ? "Favorite" : "Add to Favorites"}
-          </button>
+          </button>}
 
           <h1 className="mt-5 text-4xl font-bold leading-tight text-[#0d5686] sm:text-5xl">
             {recipe.name}
@@ -270,8 +270,8 @@ function RecipeDetails() {
           />
         </section>
       )}
-      {user && <RecipeSuggestions key={recipeId} recipe={recipe} token={token} isOwner={isExecutiveChef} onApproved={refetch} />}
-      <RecipeNotes recipeId={recipeId} token={token} />
+      {user && !recipe.isPublicViewer && <RecipeSuggestions key={recipeId} recipe={recipe} token={token} isOwner={isExecutiveChef} onApproved={refetch} />}
+      {!recipe.isPublicViewer && <RecipeNotes recipeId={recipeId} token={token} />}
     </main>
   );
 }

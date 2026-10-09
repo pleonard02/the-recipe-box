@@ -11,6 +11,28 @@ async function getAllRecipes(req, res) {
   }
 }
 
+async function getPublicRecipes(req, res) {
+  try {
+    const query = { isPublic: true };
+    for (const field of ["term", "category", "cuisine"]) {
+      if (req.query[field] !== undefined && (typeof req.query[field] !== "string" || req.query[field].length > 100)) {
+        return res.status(400).json({ message: "Invalid recipe search." });
+      }
+    }
+    if (req.query.term?.trim()) {
+      const escaped = req.query.term.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.name = { $regex: escaped, $options: "i" };
+    }
+    if (req.query.category) query.category = req.query.category;
+    if (req.query.cuisine) query.cuisine = req.query.cuisine;
+    const recipes = await Recipe.find(query).sort({ createdAt: -1 }).limit(100);
+    return res.json({ recipes: recipes.map((recipe) => ({ ...recipe.toObject(), isFavorite: false })) });
+  } catch (error) {
+    console.error("Public recipe search error:", error);
+    return res.status(500).json({ message: "Could not load public recipes." });
+  }
+}
+
 async function createRecipe(req, res) {
   try {
     const {
@@ -61,11 +83,12 @@ async function getOneRecipe(req, res) {
       return res.status(404).json({ message: "Recipe not found or recipe access was not loaded." });
     }
 
-    const shared = req.recipeRole !== "executive-chef";
+    const shared = Boolean(req.recipeShare);
     return res.status(200).json({
       ...req.recipe.toObject(),
       isShared: shared,
-      isFavorite: shared ? Boolean(req.recipeShare.isFavorite) : req.recipe.isFavorite,
+      isPublicViewer: req.recipeRole === "public-viewer",
+      isFavorite: shared ? Boolean(req.recipeShare.isFavorite) : req.recipeRole === "public-viewer" ? false : req.recipe.isFavorite,
     });
   } catch (error) {
     console.error("Get one recipe error:", error);
@@ -169,6 +192,7 @@ async function updateFavorite(req, res) {
 }
 
 module.exports = {
+  getPublicRecipes,
   getFavoriteRecipes,
   updateFavorite,
   getAllRecipes,

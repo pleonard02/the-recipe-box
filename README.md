@@ -45,6 +45,7 @@ Screenshots will highlight the home dashboard, recipe collection, meal planner, 
 | Accounts | Register, log in, and log out; access protected pages with a JWT-authenticated session. |
 | Recipe collection | Create, edit, and delete recipes with ingredients, instructions, preparation time, cooking time, and servings. |
 | Recipe photos | Upload JPG, PNG, or WebP images up to 5 MB; store and display photos through Cloudinary. |
+| Public recipes | Publish recipes for all signed-in users to browse and search; ownership and invitations still control editing and collaboration. |
 | Recipe discovery | Search TheMealDB by recipe name or browse by category or cuisine; save discovered recipes to favorites. |
 | Favorites | Keep favorite recipes together and access them from the home dashboard. Unfavoriting an imported discovery recipe removes it from the saved collection; recipes you create remain saved. Shared favorites are personal to each invited user and disappear if access is revoked. |
 | Meal planning | Assign recipes to breakfast, lunch, dinner, or snack slots; navigate weeks and choose a Sunday or Monday week start. |
